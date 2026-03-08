@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Acceso</title>
+<style>
+  body {
+    background:#0b0e14;
+    color:#eef3ff;
+    font-family: sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+  }
+  #box {
+    width:300px;
+    padding:20px;
+    background:#121621;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.1);
+    text-align:center;
+  }
+  input, button {
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border-radius:10px;
+    border:none;
+  }
+  button {
+    background:#6366f1;
+    color:white;
+    cursor:pointer;
+  }
+  #msg { margin-top:8px; color:#ff4b7a; font-size:14px; }
+</style>
+</head>
+<body>
+
+<div id="box">
+  <h2>Acceso privado</h2>
+  <input id="pass" type="password" placeholder="Contraseña">
+  <button id="go">Entrar</button>
+  <div id="msg"></div>
+</div>
+
+<script>
+  const realPass = "testimonio2025"; // ← cámbiala
+
+  document.getElementById("go").onclick = ()=>{
+    const p = document.getElementById("pass").value;
+    if(p === realPass){
+      window.location.href = "testimonio.html";
+    } else {
+      document.getElementById("msg").textContent = "Contraseña incorrecta";
+    }
+  };
+
+  document.getElementById("pass").onkeypress = (e)=>{
+    if(e.key==="Enter") document.getElementById("go").click();
+  };
+</script>
+
+</body>
+</html>

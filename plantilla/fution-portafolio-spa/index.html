@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Oski SPA – Bio-US</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  body {
+    margin:0; font-family:Arial; background:#0d0d0d; color:#eee;
+  }
+  header {
+    padding:15px; background:#111; border-bottom:1px solid #333;
+    display:flex; gap:20px;
+  }
+  header a {
+    color:#0af; text-decoration:none; font-weight:bold;
+  }
+  .view { display:none; padding:20px; }
+  .active { display:block; }
+  .btn {
+    padding:10px 15px; background:#0af; border:none; color:#fff;
+    border-radius:6px; cursor:pointer; margin-top:10px;
+  }
+  .card {
+    background:#151515; padding:15px; border:1px solid #333; 
+    margin-bottom:10px; border-radius:8px;
+  }
+  #toast {
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#222; padding:10px 15px; border-radius:6px;
+    display:none; color:#0af; border:1px solid #0af;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <a href="#home">Inicio</a>
+  <a href="#proyectos">Proyectos</a>
+  <a href="#cv">CV</a>
+  <a href="#nerd">Modo Niño-Nerd</a>
+  <button class="btn" id="btn-export">Descargar Todo (.zip)</button>
+</header>
+
+<div id="toast"></div>
+
+<!-- VISTAS -->
+<div id="home" class="view active">
+  <h1>Bienvenido Oski 💙</h1>
+  <p>Aquí va tu intro, tu misión educativa, tu Bio-US, Universe City, tu estilo STEM.</p>
+  <p>Esta SPA funciona 100% offline.</p>
+</div>
+
+<div id="proyectos" class="view">
+  <h1>Proyectos</h1>
+  <div id="pro-list"></div>
+</div>
+
+<div id="cv" class="view">
+  <h1>CV</h1>
+  <p>Generación en PDF, skills, experiencia, links…</p>
+  <button class="btn" id="btn-cv">Descargar CV</button>
+</div>
+
+<div id="nerd" class="view">
+  <h1>Modo Niño-Nerd 🚀</h1>
+  <p>Referencias Marvel, NASA, computación cuántica, lógica STEM divertida.</p>
+  <button class="btn" onclick="toast('Activado modo MARVEL x NASA x BIO-US')">
+    Activar
+  </button>
+</div>
+
+<script>
+// -------- Router --------
+function router() {
+  const hash = location.hash.replace("#", "") || "home";
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  const view = document.getElementById(hash);
+  if (view) view.classList.add("active");
+}
+window.addEventListener("hashchange", router);
+router();
+
+// -------- Toast --------
+function toast(msg, t = 2500) {
+  const el = document.getElementById("toast");
+  el.innerText = msg;
+  el.style.display = "block";
+  setTimeout(()=> el.style.display="none", t);
+}
+
+// -------- Proyectos --------
+const proyectos = [
+  { titulo:"Universe City", desc:"Sistema educativo interactivo offline." },
+  { titulo:"Bio-US Framework", desc:"Tu propio micro framework educativo." },
+  { titulo:"Mini-Facebook MX", desc:"Mensajería offline estilo retro." }
+];
+
+function renderProyectos() {
+  let html = "";
+  proyectos.forEach(p => {
+    html += `
+      <div class="card">
+        <h3>${p.titulo}</h3>
+        <p>${p.desc}</p>
+      </div>`;
+  });
+  document.getElementById("pro-list").innerHTML = html;
+}
+renderProyectos();
+
+// -------- CV PDF --------
+document.getElementById("btn-cv").onclick = () => {
+  const blob = new Blob(["CV de Oscar – versión SPA"], {type:"application/pdf"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Oscar-CV.pdf";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("PDF generado");
+};
+
+// -------- Exportar ZIP --------
+// ZIP sin librerías, formato muy simple
+document.getElementById("btn-export").onclick = () => {
+  const files = {
+    "oski-spa.html": document.documentElement.outerHTML,
+  };
+
+  const zipParts = [];
+
+  // Estructura ZIP mínima
+  let offset = 0;
+  const central = [];
+
+  for (const [name, content] of Object.entries(files)) {
+    const data = new TextEncoder().encode(content);
+    const crc = 0; // simplificado
+    const size = data.length;
+
+    const localHeader = new Uint8Array([
+      0x50,0x4b,0x03,0x04,
+      20,0,0,0,
+      0,0,0,0,
+      crc,0,0,0,
+      size,0,0,0,
+      size,0,0,0,
+      name.length,0,
+      0,0
+    ]);
+
+    zipParts.push(localHeader, new TextEncoder().encode(name), data);
+
+    const centralHeader = new Uint8Array([
+      0x50,0x4b,0x01,0x02,
+      0,0,20,0,0,0,0,0,
+      0,0,0,0,
+      size,0,0,0,
+      size,0,0,0,
+      name.length,0,
+      0,0,0,0,
+      0,0,0,0
+    ]);
+
+    central.push({ hdr: centralHeader, name, offset });
+    offset += localHeader.length + name.length + data.length;
+  }
+
+  let centralBlob = [];
+  let centralSize = 0;
+
+  for (const c of central) {
+    centralBlob.push(c.hdr, new TextEncoder().encode(c.name));
+    centralSize += c.hdr.length + c.name.length;
+  }
+
+  const end = new Uint8Array([
+    0x50,0x4b,0x05,0x06,
+    0,0,0,0,
+    central.length,0,
+    central.length,0,
+    centralSize,0,0,0,
+    offset,0,0,0,
+    0,0
+  ]);
+
+  const zip = new Blob([...zipParts, ...centralBlob, end], {type:"application/zip"});
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(zip);
+  a.download = "oski-spa.zip";
+  a.click();
+
+  toast("ZIP exportado 📦");
+};
+
+</script>
+</body>
+</html>

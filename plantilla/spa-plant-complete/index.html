@@ -1,0 +1,166 @@
+
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>OZCLEF · Portal</title>
+<link rel="stylesheet" href="css/style.css">
+
+  <style>
+    :root {
+  --bg: #0b0e14;
+  --card:#121621;
+  --text:#eef3ff;
+  --muted:#9aa3c2;
+  --accent:#4f46e5;
+  --accent2:#fbbf24;
+  --radius:14px;
+}
+
+:root.light {
+  --bg:#f3f4f6;
+  --card:white;
+  --text:#1f2937;
+  --muted:#6b7280;
+}
+
+*{box-sizing:border-box;font-family:Inter,system-ui}
+body{margin:0;background:var(--bg);color:var(--text);transition:.25s}
+
+header{
+  display:flex;justify-content:space-between;
+  padding:16px;align-items:center;
+  background:var(--card);position:sticky;top:0;z-index:10
+}
+nav a{
+  margin-left:12px;text-decoration:none;color:var(--muted);
+}
+.btn{
+  background:var(--accent);border-radius:var(--radius);
+  color:white;padding:6px 12px;text-decoration:none;
+}
+.container{max-width:1100px;margin:auto;padding:16px;}
+
+.profile-pic{
+  width:110px;height:110px;border-radius:var(--radius);
+  object-fit:cover;border:3px solid rgba(255,255,255,.1)
+}
+.cover{
+  width:100%;border-radius:var(--radius);height:180px;
+  background-size:cover;background-position:center;margin-bottom:12px
+}
+.card{
+  background:var(--card);padding:16px;border-radius:var(--radius);
+  margin-bottom:16px;
+}
+.feed-item{
+  display:flex;gap:12px;padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.05)
+}
+.thumb{width:120px;height:80px;object-fit:cover;border-radius:8px}
+
+  </style>
+
+</head>
+<body>
+
+<div id="app"></div>
+
+<script src="js/app.js"></script>
+  <script>
+    const app = document.getElementById("app");
+
+async function loadJSON(path){
+  const res = await fetch(path);
+  return res.json();
+}
+
+async function render(){
+  const hash = location.hash || "#/feed";
+  const [_, route] = hash.split("/");
+
+  const profile = await loadJSON("data/profile.json");
+
+  document.documentElement.className = profile.theme === "light" ? "light" : "";
+
+  let html = `
+  <header>
+    <div><strong>OZCLEF</strong></div>
+    <nav>
+      <a href="#/feed">Feed</a>
+      <a href="#/profile">Perfil</a>
+      <a href="#/photos">Fotos</a>
+      <a href="#/videos">Videos</a>
+      <a href="#/settings">Ajustes</a>
+    </nav>
+  </header>
+  <div class="container">
+  `;
+
+  if(route === "feed") html += await viewFeed();
+  if(route === "profile") html += viewProfile(profile);
+  if(route === "photos") html += viewPhotos();
+  if(route === "videos") html += viewVideos();
+  if(route === "settings") html += viewSettings(profile);
+
+  html += `</div>`;
+  app.innerHTML = html;
+}
+
+async function viewFeed(){
+  const feed = await loadJSON("data/feed.json");
+  let out = `<div class="card"><h2>Feed</h2>`;
+  feed.forEach(p=>{
+    out += `
+    <div class="feed-item">
+      <img class="thumb" loading="lazy" src="${p.img}">
+      <div>
+        <h3>${p.title}</h3>
+        <p>${p.text}</p>
+        <a class="btn" href="${p.url}">Abrir</a>
+      </div>
+    </div>`;
+  });
+  return out + `</div>`;
+}
+
+function viewProfile(p){
+  return `
+  <div class="cover" style="background-image:url('${p.cover}')"></div>
+  <div class="card">
+    <img class="profile-pic" src="${p.avatar}">
+    <h2>${p.name}</h2>
+    <p>${p.bio}</p>
+  </div>`;
+}
+
+function viewPhotos(){
+  return `
+  <div class="card"><h2>Fotos</h2>
+    <p>Carpeta /img/</p>
+  </div>`;
+}
+
+function viewVideos(){
+  return `
+  <div class="card"><h2>Videos</h2>
+  <p>Videos offline local — próximamente.</p>
+  </div>`;
+}
+
+function viewSettings(p){
+  return `
+  <div class="card"><h2>Ajustes</h2>
+    <p>Tema actual: <strong>${p.theme}</strong></p>
+    <p>(En próxima versión editable desde UI)</p>
+  </div>`;
+}
+
+window.addEventListener("hashchange", render);
+render();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mi perfil - Neon Feed</title>
+  <style>
+    :root{
+      --bg1: #0f0c29;
+      --bg2: #302b63;
+      --accent: #8a2be2; /* purple */
+      --neon1: #00f5ff;
+      --neon2: #ff00c8;
+      --glass: rgba(255,255,255,0.04);
+      --card-border: rgba(255,255,255,0.08);
+      --text: #e9f0ff;
+      --muted: #cbd5ff88;
+      --shadow: 0 8px 30px rgba(0,0,0,0.6);
+      --max-width: 1100px;
+    }
+
+    [data-theme="light"]{
+      --bg1: #f6f7fb; --bg2: #eef2ff; --text:#0b1220; --glass: rgba(255,255,255,0.7); --card-border: rgba(0,0,0,0.06);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      color:var(--text); background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      display:flex; justify-content:center; padding:20px;
+    }
+
+    .app{
+      width:100%; max-width:var(--max-width); min-height:80vh; display:grid; grid-template-columns: 260px 1fr 300px; gap:18px; align-items:start;
+    }
+
+    header.app-header{
+      grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;
+    }
+
+    .brand{display:flex; gap:12px; align-items:center}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(45deg,var(--neon1),var(--neon2));box-shadow:0 4px 24px rgba(138,43,226,0.2);display:flex;align-items:center;justify-content:center;font-weight:800}
+    .title{font-weight:700}
+
+    nav.topnav{display:flex;gap:8px;align-items:center}
+    nav.topnav a{padding:8px 12px;border-radius:10px;text-decoration:none;color:var(--text);font-weight:600}
+    nav.topnav a.active{background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));box-shadow:var(--shadow)}
+
+    .controls{display:flex;gap:8px;align-items:center}
+    button.icon{border:0;background:transparent;padding:8px;border-radius:8px;cursor:pointer;color:var(--text)}
+
+    aside.left, aside.right{
+      background:linear-gradient(135deg,rgba(255,255,255,0.02),transparent); border-radius:14px;padding:14px;border:1px solid var(--card-border);
+      box-shadow:var(--shadow); position:relative; height:calc(100vh - 160px); overflow:auto;
+    }
+
+    main{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:14px;padding:18px;border:1px solid var(--card-border); box-shadow:var(--shadow); min-height:60vh; max-height:calc(100vh - 160px); overflow:auto;
+    }
+
+    /* GRID DE PUBLICACIONES */
+    .feed{display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px}
+    .card{background:var(--glass); border-radius:12px; padding:12px; border:1px solid var(--card-border); transition:transform .18s ease, box-shadow .18s ease;}
+    .card:hover{transform:translateY(-6px) scale(1.03)}
+    .card h4{margin:6px 0;font-size:15px}
+    .card p{margin:0 0 8px 0;color:var(--muted);font-size:13px}
+    .media{border-radius:10px;overflow:hidden;position:relative;background:#000}
+    .thumb{display:block;width:100%;height:220px;object-fit:cover}
+    .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(90deg,var(--neon1),var(--neon2));padding:10px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,0.6)}
+    .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;color:var(--muted)}
+
+    .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .tag{background:rgba(255,255,255,0.03);padding:4px 8px;border-radius:999px;font-size:12px}
+
+    /* modal y form */
+    .btn-primary{background:linear-gradient(90deg,var(--neon1),var(--neon2));border:0;padding:8px 12px;border-radius:10px;color:#041021;font-weight:700;cursor:pointer}
+
+    .add-btn{position:fixed;right:28px;bottom:28px;padding:12px 16px;border-radius:14px;z-index:120}
+
+    .modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(2,4,10,0.6);display:flex;align-items:center;justify-content:center}
+    .modal .panel{background:var(--glass);padding:16px;border-radius:12px;max-width:600px;width:100%;border:1px solid var(--card-border)}
+
+    /* responsive */
+    @media (max-width:900px){
+      .app{grid-template-columns: 1fr;}
+      aside.left, aside.right{display:none}
+      .feed{grid-template-columns:1fr}
+      .add-btn{right:16px;bottom:16px}
+    }
+
+    /* small details */
+    .small{font-size:12px;color:var(--muted)}
+
+  </style>
+</head>
+<body>
+  <div class="app" id="app" data-theme="dark">
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo">OS</div>
+        <div>
+          <div class="title">ozclef — Neon Feed</div>
+          <div class="small">Perfil — comparte videos, fotos y links</div>
+        </div>
+      </div>
+
+      <nav class="topnav" aria-label="principal">
+        <a href="#home" data-view="home" class="active">Inicio</a>
+        <a href="#videos" data-view="videos">Videos</a>
+        <a href="#fotos" data-view="fotos">Fotos</a>
+        <a href="#links" data-view="links">Links</a>
+      </nav>
+
+      <div class="controls">
+        <button class="icon" id="btn-left" title="Abrir perfil" aria-pressed="false">☰</button>
+        <button class="icon" id="btn-right" title="Abrir opciones" aria-pressed="false">⚙</button>
+        <button class="icon" id="theme-toggle" title="Tema">🌓</button>
+      </div>
+    </header>
+
+    <aside class="left" id="left-aside">
+      <h3>Perfil</h3>
+      <p class="small">Tu bio rápida. Aquí filtros y categorías.</p>
+      <hr>
+      <div>
+        <label class="small">Buscar</label>
+        <input id="search" placeholder="buscar..." style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text)">
+      </div>
+      <hr>
+      <h4>Etiquetas</h4>
+      <div id="tag-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </aside>
+
+    <main>
+      <div id="view-title"><h2>Inicio</h2></div>
+
+      <section id="feed-view">
+        <div class="feed" id="feed"></div>
+        <div style="margin-top:12px;text-align:center"><button id="load-more" class="btn-primary">Cargar más</button></div>
+      </section>
+
+      <section id="empty-state" style="display:none">
+        <p class="small">Aún no hay publicaciones. ¡Añade una!</p>
+      </section>
+    </main>
+
+    <aside class="right" id="right-aside">
+      <h3>Herramientas</h3>
+      <p class="small">Spotify, ajustes y export/import</p>
+      <hr>
+      <div>
+        <button id="export" class="btn-primary" style="width:100%">Exportar JSON</button>
+      </div>
+      <div style="margin-top:8px">
+        <button id="import" style="width:100%" class="btn-primary">Importar JSON</button>
+      </div>
+      <hr>
+      <div>
+        <h4>Consejos</h4>
+        <ul class="small">
+          <li>Usa miniaturas para YouTube (no iframes directos).</li>
+          <li>Lazy-load siempre.</li>
+          <li>Guarda en Supabase cuando escales.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- floating add -->
+    <button class="btn-primary add-btn" id="open-add">+ Añadir</button>
+
+    <!-- modal form -->
+    <div id="modal" style="display:none" class="modal">
+      <div class="panel">
+        <h3>Añadir publicación</h3>
+        <label>Título</label>
+        <input id="p-title" style="width:100%;padding:8px;margin:6px 0;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text)">
+        <label>Tipo</label>
+        <select id="p-type" style="width:100%;padding:8px;margin:6px 0;border-radius:8px">
+          <option value="youtube">YouTube</option>
+          <option value="image">Imagen</option>
+          <option value="link">Link</option>
+        </select>
+        <label>URL (o ID de YouTube)</label>
+        <input id="p-url" style="width:100%;padding:8px;margin:6px 0;border-radius:8px">
+        <label>Descripción</label>
+        <textarea id="p-desc" style="width:100%;padding:8px;margin:6px 0;border-radius:8px"></textarea>
+        <label>Tags (coma separado)</label>
+        <input id="p-tags" style="width:100%;padding:8px;margin:6px 0;border-radius:8px">
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button id="cancel" class="icon">Cancelar</button>
+          <button id="save" class="btn-primary">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ------------------ DATOS INICIALES (puedes importarlos desde Supabase luego) ------------------ */
+    const samplePosts = [
+      {id:'v-'+Date.now(),type:'youtube',url:'EA9J5pmFZcY',title:'Video ejemplo',desc:'Leyenda corta',tags:['#musica','#vlog'],date:new Date().toISOString()},
+      {id:'img-1',type:'image',url:'https://picsum.photos/800/500?random=1',title:'Foto prueba',desc:'Una foto chida',tags:['#foto'],date:new Date().toISOString()},
+      {id:'v-2',type:'youtube',url:'dQw4w9WgXcQ',title:'Otro video',desc:'Otro comentario',tags:['#retro'],date:new Date().toISOString()}
+    ];
+
+    /* ------------------ UTILIDADES ------------------ */
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    const state = {
+      posts: JSON.parse(localStorage.getItem('neon_posts') || 'null') || samplePosts,
+      theme: localStorage.getItem('neon_theme') || 'dark',
+      loadedVideos: JSON.parse(localStorage.getItem('neon_loaded') || '[]')
+    };
+
+    const app = document.getElementById('app');
+    app.setAttribute('data-theme', state.theme);
+
+    /* ------------------ NAV / VIEWS (SPA ligero) ------------------ */
+    function setActiveNav(view){
+      $$('nav.topnav a').forEach(a=>a.classList.toggle('active', a.dataset.view===view));
+      $('#view-title').innerHTML = `<h2>${view==='home'?'Inicio':view.charAt(0).toUpperCase()+view.slice(1)}</h2>`;
+      renderFeed(view);
+    }
+
+    $$('nav.topnav a').forEach(a=>a.addEventListener('click', e=>{
+      e.preventDefault(); const v=a.dataset.view; history.pushState({},'',`#${v}`); setActiveNav(v);
+    }));
+
+    window.addEventListener('popstate',()=>{ const v = location.hash.replace('#','') || 'home'; setActiveNav(v); });
+    if(!location.hash) location.hash='#home'; setActiveNav(location.hash.replace('#','')||'home');
+
+    /* ------------------ RENDER FEED ------------------ */
+    const feedEl = $('#feed');
+
+    function youtubeThumb(id){ return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`; }
+
+    function createCard(post){
+      const art = document.createElement('article'); art.className='card';
+      const title = `<h4>${escapeHtml(post.title||'Sin título')}</h4>`;
+      const desc = `<p>${escapeHtml(post.desc||'')}</p>`;
+      let media='';
+      if(post.type==='youtube'){
+        media = `<div class="media">
+          <img class="thumb" data-video-id="${post.url}" alt="miniatura" loading="lazy" src="${youtubeThumb(post.url)}">
+          <div class="play">▶</div>
+        </div>`;
+      } else if(post.type==='image'){
+        media = `<div class="media"><img class="thumb" loading="lazy" src="${post.url}" alt="image"></div>`;
+      } else if(post.type==='link'){
+        media = `<div class="media" style="padding:12px"><a href="${post.url}" target="_blank">${post.url}</a></div>`;
+      }
+      const meta = `<div class="meta"><span class="small">${new Date(post.date).toLocaleString()}</span><span class="small">${post.type.toUpperCase()}</span></div>`;
+      const tags = `<div class="tags">${(post.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`;
+      art.innerHTML = title + desc + media + meta + tags;
+
+      // eventos: click en miniatura -> carga iframe
+      const thumb = art.querySelector('.thumb[data-video-id]');
+      if(thumb){
+        thumb.addEventListener('click',()=>loadYouTube(art, post.url));
+        // si ya está cargado en cache, carga directo
+        if(state.loadedVideos.includes(post.url)) loadYouTube(art, post.url);
+      }
+      return art;
+    }
+
+    function renderFeed(view){
+      feedEl.innerHTML = '';
+      const list = state.posts.filter(p=>{
+        if(view==='home') return true;
+        if(view==='videos') return p.type==='youtube';
+        if(view==='fotos') return p.type==='image';
+        if(view==='links') return p.type==='link';
+      });
+      if(list.length===0){ $('#empty-state').style.display='block'; } else $('#empty-state').style.display='none';
+      list.forEach(p=>feedEl.appendChild(createCard(p)));
+      lazyObserveImages();
+    }
+
+    /* ------------------ LAZY / LOAD YT ------------------ */
+    function lazyObserveImages(){
+      const imgs = Array.from(document.querySelectorAll('.thumb'));
+      const io = new IntersectionObserver((entries,observer)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){ const img=e.target; if(!img.dataset.src && img.dataset.videoId) img.src = youtubeThumb(img.dataset.videoId); observer.unobserve(img); }
+        });
+      },{root:document.querySelector('main'),rootMargin:'200px'});
+      imgs.forEach(img=>io.observe(img));
+    }
+
+    function loadYouTube(card, id){
+      const media = card.querySelector('.media');
+      if(!media) return;
+      const iframe = document.createElement('iframe');
+      iframe.width='100%'; iframe.height='320'; iframe.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+      // reemplaza
+      media.innerHTML=''; media.appendChild(iframe);
+      if(!state.loadedVideos.includes(id)){ state.loadedVideos.push(id); localStorage.setItem('neon_loaded', JSON.stringify(state.loadedVideos)); }
+    }
+
+    /* ------------------ ADD / MODAL / STORAGE ------------------ */
+    $('#open-add').addEventListener('click',()=>$('#modal').style.display='flex');
+    $('#cancel').addEventListener('click',()=>$('#modal').style.display='none');
+    $('#save').addEventListener('click',()=>{
+      const title=$('#p-title').value.trim(); const type=$('#p-type').value; let url=$('#p-url').value.trim(); const desc=$('#p-desc').value.trim(); const tags=($('#p-tags').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+      if(!url || !title){ alert('Título y URL/ID son necesarios'); return; }
+      if(type==='youtube'){ // si pegan URL completa, extraer id
+        const id = extractYouTubeID(url); if(id) url=id;
+      }
+      const post = {id: 'p-'+Date.now(), type, url, title, desc, tags, date:new Date().toISOString()};
+      state.posts.unshift(post); localStorage.setItem('neon_posts', JSON.stringify(state.posts));
+      $('#modal').style.display='none'; // limpiar
+      ['#p-title','#p-url','#p-desc','#p-tags'].forEach(s=>{document.querySelector(s).value=''});
+      renderFeed(location.hash.replace('#','')||'home');
+      updateTagList();
+    });
+
+    function extractYouTubeID(url){
+      // acepta id o url completa
+      const m = url.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);
+      if(m) return m[1];
+      if(url.length===11) return url;
+      return null;
+    }
+
+    /* ------------------ EXPORT / IMPORT ------------------ */
+    $('#export').addEventListener('click',()=>{
+      const data = JSON.stringify(state.posts, null, 2);
+      const blob = new Blob([data],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='neon-feed.json'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    $('#import').addEventListener('click',()=>{
+      const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange = e=>{
+        const f = e.target.files[0]; const reader = new FileReader(); reader.onload = ev =>{
+          try{ const data = JSON.parse(ev.target.result); if(Array.isArray(data)){ state.posts = data; localStorage.setItem('neon_posts', JSON.stringify(state.posts)); renderFeed(location.hash.replace('#','')||'home'); updateTagList(); alert('Importado ok'); } }
+          catch(err){ alert('JSON inválido'); }
+        }; reader.readAsText(f);
+      }; inp.click();
+    });
+
+    /* ------------------ TAGS / SEARCH ------------------ */
+    function updateTagList(){
+      const all = new Set(); state.posts.forEach(p=> (p.tags||[]).forEach(t=>all.add(t)));
+      const holder = $('#tag-list'); holder.innerHTML=''; all.forEach(t=>{ const s=document.createElement('button'); s.className='tag'; s.textContent=t; s.addEventListener('click', ()=>{ filterByTag(t); }); holder.appendChild(s); });
+    }
+
+    function filterByTag(tag){ feedEl.innerHTML=''; const list = state.posts.filter(p=> (p.tags||[]).includes(tag)); list.forEach(p=>feedEl.appendChild(createCard(p))); }
+
+    $('#search').addEventListener('input', e=>{
+      const q = e.target.value.toLowerCase(); feedEl.innerHTML=''; const list = state.posts.filter(p=> (p.title+ ' '+ (p.desc||'')).toLowerCase().includes(q)); list.forEach(p=>feedEl.appendChild(createCard(p)));
+    });
+
+    /* ------------------ ASIDES TOGGLE / THEME ------------------ */
+    $('#btn-left').addEventListener('click', ()=>{ const a=$('#left-aside'); a.style.display = a.style.display==='none'?'block':'none'; });
+    $('#btn-right').addEventListener('click', ()=>{ const a=$('#right-aside'); a.style.display = a.style.display==='none'?'block':'none'; });
+
+    $('#theme-toggle').addEventListener('click', ()=>{
+      state.theme = state.theme==='dark'?'light':'dark'; app.setAttribute('data-theme', state.theme); localStorage.setItem('neon_theme', state.theme);
+    });
+
+    /* ------------------ HELPERS ------------------ */
+    function escapeHtml(s){ return String(s||'').replace(/[&<>\"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    /* ------------------ LOAD / INIT ------------------ */
+    function init(){ renderFeed('home'); updateTagList(); }
+    init();
+  </script>
+</body>
+</html>

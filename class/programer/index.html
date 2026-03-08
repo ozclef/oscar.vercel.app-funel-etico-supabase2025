@@ -1,0 +1,410 @@
+
+
+@{
+
+
+
+}
+
+
+
+
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Venta de Autos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+  body {
+  background: url('https://images.unsplash.com/photo-1511918984145-48de785d4c4e?fit=crop&w=1200&q=80') center/cover no-repeat;
+  min-height: 100vh;
+  position: relative;
+}
+
+
+body: before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: inherit;
+  filter: blur(12px) brightness(0.7);
+  z-index: -1;
+}
+  
+    body {
+      margin:0;
+      font-family:sans-serif;
+      background:#f5f5f5;
+    }
+    
+    .navbar, .footer {
+      background: #1e293b;
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    
+    .navbar { position:fixed; top:0; left:0; right:0; z-index:10; }
+    .footer { position:fixed; bottom:0; left:0; right:0; font-size:0.95em; }
+    .container {
+      padding: 80px 16px 60px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .menu-btn, .login-btn, .logout-btn {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 18px;
+      cursor:pointer;
+      margin: 0 4px;
+      font-size: 1em;
+    }
+
+
+    .menu-btn.active { background: #16a34a;}
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(30,41,59,0.09);
+      margin: 16px 0;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .crud-btn {
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 14px;
+      cursor:pointer;
+      margin-right: 8px;
+      font-size: 0.95em;
+    }
+    .hidden { display:none; }
+    .login-form input {
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      margin-right: 10px;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body style="body: before", "body">
+  <!-- Barra de navegación -->
+  <div class="navbar">
+    <div>
+      <strong>Venta de Autos</strong>
+    </div>
+    <div>
+      <button class="menu-btn" id="todosBtn">Todos</button>
+      <button class="menu-btn" id="motosBtn">Motos</button>
+      <button class="menu-btn" id="autosBtn">Autos</button>
+      <button class="login-btn" id="loginMenuBtn">Login</button>
+      <button class="logout-btn hidden" id="logoutMenuBtn">Salir</button>
+    </div>
+  </div>
+  
+ <!-- 1. HTML
+Agrega este bloque justo después del <body>:-->
+
+<div id="sidebar" class="sidebar hidden">
+  <button onclick="closeSidebar()" class="close-btn">&times;</button>
+  <a href="#" onclick="setTipo('todos')">Todos</a>
+  <a href="#" onclick="setTipo('autos')">Autos</a>
+  <a href="#" onclick="setTipo('motos')">Motos</a>
+  <hr>
+  <a href="#" onclick="mostrarLogin()">Login</a>
+</div>
+<button class="open-sidebar-btn" onclick="openSidebar()">☰</button>
+
+<style>
+/*2. CSS
+Agrega esto en tu <style>:*/
+
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 220px;
+  height: 100%;
+  background: #1e293bdd;
+  color: #fff;
+  padding: 30px 18px;
+  box-shadow: 2px 0 12px rgba(30,41,59,0.12);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  transition: transform 0.3s;
+  transform: translateX(-100%);
+}
+.sidebar a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.1em;
+  padding: 8px 0;
+}
+.sidebar hr {
+  border: none;
+  border-top: 1px solid #64748b;
+  margin: 12px 0;
+}
+.sidebar .close-btn {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  font-size: 2em;
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 18px;
+}
+.open-sidebar-btn {
+  position: fixed;
+  top: 18px; left: 18px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 1.5em;
+  z-index: 101;
+  cursor: pointer;
+}
+.sidebar:not(.hidden) {
+  transform: translateX(0);
+}
+</style>
+<script>
+3//JS
+//rega estas funciones en tu <script>:
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.remove('hidden');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.add('hidden');
+}
+// Opcional: cierra al hacer click fuera
+window.onclick = function(e) {
+  if (!document.getElementById('sidebar').contains(e.target) &&
+      !document.querySelector('.open-sidebar-btn').contains(e.target) &&
+      !document.getElementById('sidebar').classList.contains('hidden')) {
+    closeSidebar();
+  }
+};
+  </script>
+  
+  <!-- Contenido principal -->
+  <div class="container" id="mainContent">
+    <!-- Aquí se insertan las cards de vehículos -->
+    <h2>Bienvenido a la tienda de Vehículos</h2>
+    <p>Compra y vende autos y motos fácilmente.</p>
+    <img src="https://images.unsplash.com/photo-1511918984145-48de785d4c4e?fit=crop&w=600&q=80" alt="autos" style="width:100%; border-radius:10px;">
+  </div>
+  <!-- Vista de login -->
+  
+  
+   <button class="menu-btn" id="todosBtn">Todos</button>
+      <button class="menu-btn" id="motosBtn">Motos</button>
+      <button class="menu-btn" id="autosBtn">Autos</button>
+  <div class="container hidden" id="loginPage">
+    <h2>Iniciar sesión PANEL ADMIN
+    <form class="login-form" id="loginForm">
+      <input type="text" id="usuario" placeholder="Usuario" required>
+      <input type="password" id="clave" placeholder="Clave" required>
+      <button type="submit" class="login-btn">Ingresar</button>
+    </form>
+    <div id="loginError" style="color:#dc2626; margin-top:10px;"></div>
+  </div>
+  <!-- Panel CRUD (solo para admin) -->
+  <div class="container hidden" id="crudPage">
+    <h2>Panel de Administración</h2>
+    <div id="crudList">
+      <!-- Aquí se listan los autos/motos -->
+    </div>
+    <button class="crud-btn" id="addItemBtn">Agregar Nuevo Vehículo</button>
+    <div id="addForm" class="hidden">
+      <input type="text" id="itemNombre" placeholder="Marca y modelo">
+      <input type="text" id="itemTipo" placeholder="Tipo: auto/moto">
+      <input type="text" id="itemPrecio" placeholder="Precio">
+      <input type="text" id="itemImagen" placeholder="URL de imagen (opcional)">
+      <button class="crud-btn" id="saveItemBtn">Guardar</button>
+      <button class="crud-btn" id="cancelItemBtn" style="background:#64748b;">Cancelar</button>
+    </div>
+  </div>
+  <!-- Footer -->
+  <div class="footer">
+    <div>
+      © 2025 Venta de Autos. Todos los derechos reservados.
+    </div>
+    <div>
+      <a href="#" style="color:#fff;">Contacto</a>
+    </div>
+  </div>
+  <!-- Script principal -->
+  <script>
+    // --- USUARIO Y CRUD LOCAL ---
+    let usuarioAutenticado = false;
+    let tipoActual = "todos";
+    let items = [
+      {id:1, nombre:"Toyota Corolla", tipo:"auto", precio:"$50,000", imagen:"https://images.unsplash.com/photo-1511918984145-48de785d4c4e?fit=crop&w=400&q=80"},
+      {id:2, nombre:"Honda Civic", tipo:"auto", precio:"$42,500", imagen:"https://images.unsplash.com/photo-1461632830798-3adb3034e4c8?fit=crop&w=400&q=80"},
+      {id:3, nombre:"Volkswagen Golf", tipo:"auto", precio:"$93,200", imagen:"https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?fit=crop&w=400&q=80"},
+      {id:4, nombre:"BMW Serie 3", tipo:"auto", precio:"$72,950", imagen:"https://images.unsplash.com/photo-1511918984145-48de785d4c4e?fit=crop&w=400&q=80"},
+      {id:5, nombre:"Kawasaki Ninja", tipo:"moto", precio:"$50,000", imagen:"https://images.unsplash.com/photo-1519864600264-2b6f1babe3a8?fit=crop&w=400&q=80"},
+      {id:6, nombre:"Harley Davidson", tipo:"moto", precio:"$100,500", imagen:"https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?fit=crop&w=400&q=80"},
+      {id:7, nombre:"Yamaha FZ", tipo:"moto", precio:"$93,200", imagen:"https://images.unsplash.com/photo-1461632830798-3adb3034e4c8?fit=crop&w=400&q=80"},
+      {id:8, nombre:"Suzuki GN", tipo:"moto", precio:"$72,950", imagen:"https://images.unsplash.com/photo-1519864600264-2b6f1babe3a8?fit=crop&w=400&q=80"}
+    ];
+    let nextId = items.length + 1;
+    let editId = null;
+
+    // --- FUNCIONES DE INTERFAZ ---
+    function mostrarLanding() {
+      document.getElementById('mainContent').classList.remove('hidden');
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('crudPage').classList.add('hidden');
+      document.getElementById('loginMenuBtn').classList.remove('hidden');
+      document.getElementById('logoutMenuBtn').classList.add('hidden');
+      cargarItems();
+    }
+    function mostrarLogin() {
+      document.getElementById('mainContent').classList.add('hidden');
+      document.getElementById('crudPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('loginMenuBtn').classList.add('hidden');
+      document.getElementById('logoutMenuBtn').classList.add('hidden');
+    }
+    function mostrarCrud() {
+      document.getElementById('mainContent').classList.add('hidden');
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('crudPage').classList.remove('hidden');
+      document.getElementById('loginMenuBtn').classList.add('hidden');
+      document.getElementById('logoutMenuBtn').classList.remove('hidden');
+      cargarItems();
+    }
+    // --- EVENTOS MENU ---
+    document.getElementById('loginMenuBtn').onclick = mostrarLogin;
+    document.getElementById('logoutMenuBtn').onclick = () => {
+      usuarioAutenticado = false;
+      mostrarLanding();
+    };
+    function setTipo(tipo) {
+      tipoActual = tipo;
+      document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+      if (tipo === "todos") document.getElementById('todosBtn').classList.add('active');
+      if (tipo === "motos") document.getElementById('motosBtn').classList.add('active');
+      if (tipo === "autos") document.getElementById('autosBtn').classList.add('active');
+      cargarItems();
+    }
+    document.getElementById('todosBtn').onclick = () => setTipo('todos');
+    document.getElementById('motosBtn').onclick = () => setTipo('motos');
+    document.getElementById('autosBtn').onclick = () => setTipo('autos');
+
+    // --- LOGIN (dummy, sin credenciales, cualquier usuario sirve) ---
+    document.getElementById('loginForm').onsubmit = function(e){
+      e.preventDefault();
+      // Aquí iría la validación contra el backend.
+      // Por ahora, cualquier usuario y clave permite el acceso.
+      usuarioAutenticado = true;
+      document.getElementById('loginError').innerText = "";
+      mostrarCrud();
+    };
+
+    // --- CRUD ---
+    function cargarItems(){
+      if (!usuarioAutenticado){
+        // Landing page: muestra solo items filtrados
+        let html = "";
+        const filtrados = tipoActual === "todos" ? items : items.filter(i=>i.tipo===tipoActual);
+        filtrados.forEach(item => {
+          html += `<div class="card">
+            <img src="${item.imagen || 'https://via.placeholder.com/400x200'}" alt="${item.nombre}">
+            <strong>${item.nombre}</strong>
+            <span>Tipo: ${item.tipo}</span>
+            <span>Precio: ${item.precio}</span>
+          </div>`;
+        });
+        document.getElementById('mainContent').innerHTML = `<h2>Vehículos disponibles: ${tipoActual.charAt(0).toUpperCase()+tipoActual.slice(1)}</h2>${html}`;
+      } else {
+        // Panel CRUD
+        let html = "";
+        items.forEach(item => {
+          html += `<div class="card">
+            <img src="${item.imagen || 'https://via.placeholder.com/400x200'}" alt="${item.nombre}">
+            <strong>${item.nombre}</strong>
+            <span>Tipo: ${item.tipo}</span>
+            <span>Precio: ${item.precio}</span>
+            <button class="crud-btn" onclick="editarItem(${item.id})">Editar</button>
+            <button class="crud-btn" style="background:#dc2626;" onclick="eliminarItem(${item.id})">Eliminar</button>
+          </div>`;
+        });
+        document.getElementById('crudList').innerHTML = html;
+      }
+    }
+    // --- AGREGAR/EDITAR ---
+    document.getElementById('addItemBtn').onclick = () => {
+      editId = null;
+      document.getElementById('addForm').classList.remove('hidden');
+      document.getElementById('itemNombre').value = "";
+      document.getElementById('itemTipo').value = "";
+      document.getElementById('itemPrecio').value = "";
+      document.getElementById('itemImagen').value = "";
+    };
+    document.getElementById('cancelItemBtn').onclick = () => {
+      document.getElementById('addForm').classList.add('hidden');
+    };
+    document.getElementById('saveItemBtn').onclick = () => {
+      const nombre = document.getElementById('itemNombre').value;
+      const tipo = document.getElementById('itemTipo').value;
+      const precio = document.getElementById('itemPrecio').value;
+      const imagen = document.getElementById('itemImagen').value;
+      if (!nombre || !tipo || !precio) return alert("Completa todos los campos");
+      if (editId){
+        const idx = items.findIndex(i=>i.id===editId);
+        if (idx>-1){
+          items[idx] = {id:editId, nombre, tipo, precio, imagen};
+        }
+      } else {
+        items.push({id:nextId++, nombre, tipo, precio, imagen});
+      }
+      cargarItems();
+      document.getElementById('addForm').classList.add('hidden');
+    };
+    window.editarItem = function(id){
+      const item = items.find(i=>i.id===id);
+      if (!item) return;
+      editId = id;
+      document.getElementById('addForm').classList.remove('hidden');
+      document.getElementById('itemNombre').value = item.nombre;
+      document.getElementById('itemTipo').value = item.tipo;
+      document.getElementById('itemPrecio').value = item.precio;
+      document.getElementById('itemImagen').value = item.imagen || "";
+    }
+    window.eliminarItem = function(id){
+      if (!confirm("¿Seguro que deseas eliminar este vehículo?")) return;
+      items = items.filter(i=>i.id!==id);
+      cargarItems();
+    }
+
+    // --- INICIALIZA ---
+    mostrarLanding();
+
+  </script>
+</body>
+</html>

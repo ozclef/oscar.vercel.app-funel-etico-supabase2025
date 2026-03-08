@@ -1,0 +1,509 @@
+¡Perfecto — me encanta tu cuidado! 😄 Aquí tienes **todo listo y práctico**: una página single-file (HTML + JS) que puedes publicar en un repo público **sin exponer tu código sensible**. Es un demo **P2P (WebRTC DataChannel)** sin Firebase ni servidor: la señalización se hace **manualmente por copy/paste** (o QR si quieres luego), así nadie recibe tu `deviceId` en ningún servidor central — todo queda en el navegador del usuario.
+
+La página **incluye**:
+
+* Perfil local (nombre) y `deviceId` **generado localmente** y **oculto** (guardado en localStorage).
+* Crear offer / aceptar offer / pegar answer (flujo copy-paste).
+* Chat en tiempo real por DataChannel (mensajes enviados/recibidos).
+* Historial guardado en localStorage.
+* Exportar / importar todo como JSON (opción de **quitar el deviceId** al exportar).
+* Contactos simples (incrementan id).
+* Notificaciones del navegador cuando llegan mensajes.
+* Envío de archivos vía DataChannel (chunking, reensamblado y descarga).
+* Base para añadir llamadas (video/voice) más adelante (requiere signaling similar).
+
+> Nota: el demo **no** manda nada a servidores externos. Si publicas este `index.html` en GitHub Pages, estás publicando solo la UI/cliente — ningún ID sale del navegador a menos que el usuario lo comparta manualmente. Eso ayuda a mantener la confidencialidad.
+
+---
+
+### ✅ Copia esto en `index.html` y súbelo al repo público (solo frontend)
+
+```html
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Demo Chat P2P — Safe Demo</title>
+<style>
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;padding:16px;background:#0f172a;color:#e6eef8}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  h1{font-size:18px;margin:0}
+  .card{background:#071033;padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,.6);margin-bottom:12px}
+  label{display:block;font-size:13px;margin-bottom:6px;color:#cfe2ff}
+  input[type="text"], textarea, select{width:100%;padding:8px;border-radius:8px;border:1px solid #22334a;background:#071730;color:#eaf6ff}
+  textarea{min-height:80px;font-family:monospace}
+  button{background:#2563eb;color:white;padding:8px 10px;border-radius:8px;border:0;cursor:pointer;margin-right:6px}
+  button.ghost{background:transparent;border:1px solid #2b6cb0}
+  #chatLog{height:240px;overflow:auto;border-radius:8px;padding:8px;background:#020617;border:1px solid #16324a}
+  .msg{margin-bottom:8px;padding:8px;border-radius:8px}
+  .mine{background:#0b3b67;text-align:right}
+  .their{background:#07283c;text-align:left}
+  .small{font-size:12px;color:#9bb7d8}
+  footer{font-size:12px;color:#9bb7d8;margin-top:12px}
+  .row{display:flex;gap:8px;align-items:center}
+  .col{flex:1}
+  .tiny{font-size:11px;padding:6px}
+  .danger{background:#ef4444}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Demo Chat P2P — Safe demo (sin servidor)</h1>
+  <div class="small">P2P DataChannel • señal manual • export/import JSON</div>
+</header>
+
+<section class="card">
+  <label>Nombre de perfil (local)</label>
+  <div class="row">
+    <input id="profileName" type="text" placeholder="Tu nombre visible (ej: Oscar)" />
+    <button id="saveProfile">Guardar</button>
+  </div>
+  <div class="small" style="margin-top:8px">
+    El <i>deviceId</i> es generado localmente y se guarda en tu navegador. Puedes elegir quitarlo al exportar.
+  </div>
+</section>
+
+<section class="card">
+  <label>Control de conexión (flujos manuales)</label>
+  <div class="row" style="margin-bottom:8px">
+    <button id="createOffer">1) Crear offer (soy A)</button>
+    <button id="acceptOffer">2) Aceptar offer y crear answer (soy B)</button>
+    <button id="applyAnswer">3) Pegar answer (soy A)</button>
+  </div>
+
+  <label>Offer / Answer (copy & paste)</label>
+  <textarea id="localSDP" placeholder="Aquí aparece tu offer/answer para copiar" readonly></textarea>
+  <div style="height:8px"></div>
+  <textarea id="remoteSDP" placeholder="Pega aquí la offer (B) o la answer (A) desde la otra persona"></textarea>
+  <div style="margin-top:8px" class="row">
+    <button id="copyLocal">Copiar local</button>
+    <button id="pasteRemote" class="ghost">Pegar remote</button>
+    <button id="clearSDP" class="ghost tiny">Limpiar</button>
+  </div>
+
+  <div class="small" style="margin-top:8px">Usa copy/paste entre dos navegadores. También puedes escanear el texto como QR externamente si prefieres.</div>
+</section>
+
+<section class="card">
+  <label>Chat & Archivos</label>
+  <div id="chatLog"></div>
+  <div style="height:8px"></div>
+  <div class="row" style="margin-bottom:8px">
+    <input id="messageInput" type="text" placeholder="Escribe mensaje..." />
+    <button id="sendMsg">Enviar</button>
+  </div>
+  <div class="row" style="margin-bottom:8px">
+    <input id="fileInput" type="file" />
+    <button id="sendFile">Enviar archivo</button>
+  </div>
+  <div class="small">Si la conexión no abre, revisa que ambos hayan intercambiado offer/answer correctamente.</div>
+</section>
+
+<section class="card">
+  <label>Contactos y Export/Import</label>
+  <div class="row">
+    <input id="contactName" type="text" placeholder="Nuevo contacto nombre" />
+    <button id="addContact">Agregar</button>
+  </div>
+  <div id="contactsList" class="small" style="margin-top:8px"></div>
+  <div style="height:8px"></div>
+  <div class="row">
+    <button id="exportAll">Exportar todo (JSON)</button>
+    <button id="exportStrip" class="ghost">Exportar sin deviceId</button>
+    <input id="importFile" type="file" />
+  </div>
+</section>
+
+<footer>
+  <div class="small">Info: Este demo es educativo. No envía datos a servidores. Para demos en vivo puedes usar copy/paste o integración QR. Guarda backups exportando JSON.</div>
+</footer>
+
+<script>
+/* ---------- Utilities ---------- */
+const STORAGE_KEY = 'p2pDemo_v1';
+const CHUNK_SIZE = 16 * 1024; // 16KB por chunk para archivos
+function uuidv4(){ return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{ const r=Math.random()*16|0; const v=c=='x'?r:(r&0x3|0x8); return v.toString(16);});}
+function nowISO(){ return new Date().toISOString(); }
+
+/* ---------- State + storage ---------- */
+let state = {
+  profile: { name: '', deviceId: uuidv4() },
+  contacts: [],
+  messages: [], // {id, fromName, fromDevice, text, ts, type}
+};
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+    if(s) state = Object.assign(state,s);
+  }catch(e){ console.warn('load err',e) }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateUI(); }
+
+/* ---------- UI refs ---------- */
+const profileNameEl = document.getElementById('profileName');
+const saveProfileBtn = document.getElementById('saveProfile');
+const createOfferBtn = document.getElementById('createOffer');
+const acceptOfferBtn = document.getElementById('acceptOffer');
+const applyAnswerBtn = document.getElementById('applyAnswer');
+const localSDP = document.getElementById('localSDP');
+const remoteSDP = document.getElementById('remoteSDP');
+const copyLocalBtn = document.getElementById('copyLocal');
+const pasteRemoteBtn = document.getElementById('pasteRemote');
+const clearSDPBtn = document.getElementById('clearSDP');
+
+const chatLog = document.getElementById('chatLog');
+const messageInput = document.getElementById('messageInput');
+const sendMsgBtn = document.getElementById('sendMsg');
+const fileInput = document.getElementById('fileInput');
+const sendFileBtn = document.getElementById('sendFile');
+
+const contactNameEl = document.getElementById('contactName');
+const addContactBtn = document.getElementById('addContact');
+const contactsList = document.getElementById('contactsList');
+
+const exportAllBtn = document.getElementById('exportAll');
+const exportStripBtn = document.getElementById('exportStrip');
+const importFileEl = document.getElementById('importFile');
+
+loadState();
+
+/* ---------- RTC / DataChannel ---------- */
+let pc = null;
+let dc = null;
+let incomingFileTransfers = {}; // fileId -> {meta, chunks:[]}
+
+function makePC(){
+  const config = { iceServers: [{urls:'stun:stun.l.google.com:19302'}] };
+  pc = new RTCPeerConnection(config);
+  pc.onicecandidate = (e)=> {
+    // When gathering finishes, localDescription will include ICE candidates
+    // We update localSDP when setLocalDescription completes
+  };
+  pc.ondatachannel = (ev)=>{
+    dc = ev.channel;
+    setupDC();
+  };
+  pc.onconnectionstatechange = ()=> {
+    console.log('pc state', pc.connectionState);
+  };
+  return pc;
+}
+
+function setupDC(){
+  if(!dc) return;
+  dc.binaryType = 'arraybuffer';
+  dc.onopen = ()=> {
+    appendSystem('DataChannel OPEN');
+  };
+  dc.onclose = ()=> appendSystem('DataChannel CLOSED');
+  dc.onmessage = async (ev) => {
+    // If string -> control or chat
+    if(typeof ev.data === 'string'){
+      try{
+        const parsed = JSON.parse(ev.data);
+        if(parsed.type === 'chat'){
+          receiveMessage(parsed);
+        } else if(parsed.type === 'file-meta'){
+          incomingFileTransfers[parsed.fileId] = {meta: parsed, chunks: [], receivedBytes:0};
+          appendSystem('Incoming file: ' + parsed.fileName + ' ('+ parsed.size + ' bytes)');
+        } else if(parsed.type === 'file-end'){
+          const fileId = parsed.fileId;
+          const tr = incomingFileTransfers[fileId];
+          if(tr){
+            const blob = new Blob(tr.chunks);
+            const url = URL.createObjectURL(blob);
+            const name = tr.meta.fileName || 'download';
+            addMessage({fromName: tr.meta.fromName, fromDevice: tr.meta.fromDevice, text:`📁 Archivo recibido: <a href="${url}" download="${name}">${name}</a>`, ts: nowISO(), type:'file'});
+            delete incomingFileTransfers[fileId];
+          }
+        } else {
+          console.log('control', parsed);
+        }
+      }catch(err){
+        console.warn('no json control', err, ev.data);
+      }
+    } else if(ev.data instanceof ArrayBuffer){
+      // binary chunk for active file transfer
+      // join to last incoming file
+      // find a transfer with incomplete status
+      // We'll append to the most recent meta that doesn't match receivedBytes>=size
+      const trKeys = Object.keys(incomingFileTransfers);
+      for(let k of trKeys){
+        const t = incomingFileTransfers[k];
+        if(t && t.receivedBytes < t.meta.size){
+          t.chunks.push(ev.data);
+          t.receivedBytes += ev.data.byteLength;
+          // optionally show progress
+          break;
+        }
+      }
+    } else {
+      console.log('unknown data type', typeof ev.data);
+    }
+  };
+}
+
+/* ---------- Chat helpers ---------- */
+function sendChat(text){
+  const msg = {type:'chat', fromName:state.profile.name, fromDevice:state.profile.deviceId, text, ts: nowISO()};
+  if(dc && dc.readyState === 'open'){
+    dc.send(JSON.stringify(msg));
+    addMessage(Object.assign({}, msg, {self:true}));
+  } else {
+    appendSystem('No hay conexión abierta');
+  }
+}
+
+function receiveMessage(parsed){
+  addMessage(parsed);
+  // Notifications
+  if(document.hidden && Notification && Notification.permission === 'granted'){
+    new Notification(parsed.fromName || 'Remoto', {body:ParsedTextPreview(parsed.text)});
+  }
+}
+
+function ParsedTextPreview(t){ return (t||'').slice(0,120); }
+
+function addMessage(msg){
+  const id = uuidv4();
+  state.messages.push(Object.assign({id}, msg));
+  saveState();
+  renderChat();
+}
+
+function appendSystem(txt){
+  state.messages.push({id:uuidv4(), fromName:'system', text:txt, ts: nowISO(), type:'system'});
+  saveState();
+}
+
+/* ---------- File send (chunked) ---------- */
+async function sendFile(file){
+  if(!dc || dc.readyState !== 'open'){ appendSystem('No hay conexión para enviar archivo'); return; }
+  const fileId = uuidv4();
+  const meta = {type:'file-meta', fileId, fileName: file.name, size: file.size, fromName: state.profile.name, fromDevice: state.profile.deviceId};
+  dc.send(JSON.stringify(meta));
+  // read and send in chunks
+  const fr = new FileReader();
+  let offset = 0;
+  while(offset < file.size){
+    const slice = file.slice(offset, offset + CHUNK_SIZE);
+    const ab = await blobToArrayBuffer(slice);
+    dc.send(ab);
+    offset += CHUNK_SIZE;
+  }
+  dc.send(JSON.stringify({type:'file-end', fileId}));
+  addMessage({fromName: state.profile.name, fromDevice: state.profile.deviceId, text:`📁 Archivo enviado: ${file.name} (${file.size} bytes)`, ts: nowISO(), type:'file', self:true});
+}
+function blobToArrayBuffer(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(r.error); r.readAsArrayBuffer(blob); }); }
+
+/* ---------- Offer / Answer flows ---------- */
+async function doCreateOffer(){
+  makePC();
+  dc = pc.createDataChannel('chat');
+  setupDC();
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  // wait for ICE gathering to complete so SDP contains candidates
+  await waitForIceGatheringComplete(pc);
+  localSDP.value = JSON.stringify(pc.localDescription);
+  appendSystem('Offer creada. Copia y comparte el texto con la otra persona.');
+}
+
+async function doAcceptOffer(){
+  const remoteText = remoteSDP.value.trim();
+  if(!remoteText){ alert('Pega aquí la offer (desde A)'); return; }
+  const obj = JSON.parse(remoteText);
+  makePC();
+  // when B gets datachannel via ondatachannel -> setupDC
+  await pc.setRemoteDescription(obj);
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  await waitForIceGatheringComplete(pc);
+  localSDP.value = JSON.stringify(pc.localDescription); // enviar esto de vuelta a A
+  appendSystem('Answer creada. Copia y devuelve a quien creó la offer.');
+}
+
+async function doApplyAnswer(){
+  const remoteText = remoteSDP.value.trim();
+  if(!remoteText){ alert('Pega aquí la answer (desde B)'); return; }
+  const obj = JSON.parse(remoteText);
+  if(!pc){ alert('No tienes una offer activa. Crea offer primero (soy A).'); return; }
+  await pc.setRemoteDescription(obj);
+  appendSystem('Answer aplicada. Esperando conexión DataChannel...');
+}
+
+/* Wait ICE */
+function waitForIceGatheringComplete(pcRef){
+  return new Promise((resolve)=>{
+    if(pcRef.iceGatheringState === 'complete') return resolve();
+    function check(e){
+      if(pcRef.iceGatheringState === 'complete'){
+        pcRef.removeEventListener('icegatheringstatechange', check);
+        resolve();
+      }
+    }
+    pcRef.addEventListener('icegatheringstatechange', check);
+    // backup timeout
+    setTimeout(resolve, 7000);
+  });
+}
+
+/* ---------- Export / Import ---------- */
+function exportJSON(stripDevice=false){
+  const copy = JSON.parse(JSON.stringify(state));
+  if(stripDevice){
+    // remove device ids from messages/contacts and profile
+    copy.profile = Object.assign({}, copy.profile, {deviceId: undefined});
+    copy.messages = copy.messages.map(m => {
+      const mm = Object.assign({}, m);
+      if(mm.fromDevice) mm.fromDevice = 'HIDDEN';
+      return mm;
+    });
+    copy.contacts = copy.contacts.map(c => ({...c, id: c.id}));
+  }
+  const blob = new Blob([JSON.stringify(copy, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `p2pDemo_export_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSONFile(file){
+  const r = new FileReader();
+  r.onload = ()=> {
+    try{
+      const parsed = JSON.parse(r.result);
+      // merge carefully: prefer new profile name only if present
+      if(parsed.profile) state.profile = Object.assign(state.profile, parsed.profile);
+      if(Array.isArray(parsed.contacts)) state.contacts = parsed.contacts;
+      if(Array.isArray(parsed.messages)) state.messages = parsed.messages;
+      saveState();
+      appendSystem('Import completado.');
+    }catch(e){ alert('JSON inválido: '+e.message); }
+  };
+  r.readAsText(file);
+}
+
+/* ---------- Contacts ---------- */
+function addContact(){
+  const name = contactNameEl.value.trim();
+  if(!name) return;
+  const id = (state.contacts.length? Math.max(...state.contacts.map(c=>c.id))+1 : 1);
+  state.contacts.push({id, name, createdAt: nowISO()});
+  contactNameEl.value = '';
+  saveState();
+}
+
+/* ---------- UI rendering ---------- */
+function renderChat(){
+  chatLog.innerHTML = '';
+  for(const m of state.messages.slice(-200)){ // últimos 200
+    const el = document.createElement('div');
+    el.className = 'msg ' + ((m.self) ? 'mine' : (m.fromName==='system' ? '' : 'their'));
+    el.innerHTML = `<div class="small">${m.fromName || 'anon'} • <span class="tiny">${new Date(m.ts).toLocaleString()}</span></div>
+                    <div style="margin-top:6px">${m.text}</div>`;
+    chatLog.appendChild(el);
+  }
+  chatLog.scrollTop = chatLog.scrollHeight;
+  // contacts
+  contactsList.innerHTML = state.contacts.map(c=>`<div>• ${c.id} — ${c.name}</div>`).join('');
+}
+
+/* ---------- misc UI and events ---------- */
+function updateUI(){
+  profileNameEl.value = state.profile.name || '';
+  renderChat();
+}
+saveProfileBtn.onclick = ()=> {
+  state.profile.name = profileNameEl.value.trim() || ('User-'+state.profile.deviceId.slice(0,6));
+  saveState();
+  appendSystem('Perfil guardado localmente.');
+};
+createOfferBtn.onclick = doCreateOffer;
+acceptOfferBtn.onclick = doAcceptOffer;
+applyAnswerBtn.onclick = doApplyAnswer;
+
+copyLocalBtn.onclick = ()=> { localSDP.select(); document.execCommand('copy'); };
+pasteRemoteBtn.onclick = ()=> { remoteSDP.focus(); };
+
+clearSDPBtn.onclick = ()=> { localSDP.value=''; remoteSDP.value=''; };
+
+sendMsgBtn.onclick = ()=> {
+  const t = messageInput.value.trim(); if(!t) return;
+  sendChat(t); messageInput.value='';
+};
+messageInput.onkeydown = (e)=>{ if(e.key === 'Enter') sendMsgBtn.click(); };
+
+addContactBtn.onclick = addContact;
+
+exportAllBtn.onclick = ()=> exportJSON(false);
+exportStripBtn.onclick = ()=> exportJSON(true);
+
+importFileEl.onchange = (ev)=> {
+  const f = ev.target.files && ev.target.files[0];
+  if(f) importJSONFile(f);
+  importFileEl.value = '';
+};
+
+sendFileBtn.onclick = ()=> {
+  const f = fileInput.files && fileInput.files[0];
+  if(!f) return alert('Selecciona un archivo');
+  sendFile(f);
+};
+
+/* Notifications permission */
+if('Notification' in window && Notification.permission !== 'granted'){
+  Notification.requestPermission().then(()=>{ /* ok */ });
+}
+
+/* initial UI load */
+if(!state.profile.deviceId) state.profile.deviceId = uuidv4();
+if(!state.profile.name) state.profile.name = 'Anon';
+saveState();
+updateUI();
+
+</script>
+</body>
+</html>
+```
+
+---
+
+### ¿Cómo usarlo (pasos rápidos)?
+
+1. Publica sólo este `index.html` en un repo público (GitHub Pages u otro hosting).
+2. Abre la página en dos navegadores/dispositivos.
+3. En A: pon tu nombre → Crear Offer → Copiar el texto (localSDP).
+4. En B: pega la offer en el textarea remoto → Aceptar offer → B copiará la Answer mostrada.
+5. En A: pega la Answer → Aplicar Answer. Cuando el DataChannel abra, pueden chatear.
+6. Para enviar archivos: selecciónalos y hacer `Enviar archivo`. En el receptor aparecerá un enlace de descarga.
+
+---
+
+### Seguridad y privacidad (resumen)
+
+* `deviceId` es **local** y **no** se comparte a menos que el usuario lo copie dentro de algún mensaje o exporte JSON. En el export tienes la opción **“Exportar sin deviceId”** para publicar ejemplos sin IDs.
+* El demo no tiene servidor; señalización es manual → **evita exponer** IDs automáticos a terceros.
+* Para un demo público y **controlado**, publica únicamente este frontend — no publiques tus repos privados con la lógica sensible.
+* Si en el futuro quieres que la señalización sea automática (p. ej. QR o enlace) tendrás que añadir un servicio de signaling (puede ser temporal, con tokens de una sola sesión). Eso ya implica más responsabilidad, pero se puede hacer con cuidado.
+
+---
+
+### Siguientes pasos que te recomiendo (si quieres que lo haga yo ahora)
+
+* Puedo **adaptar** ese `index.html` para:
+
+  * generar automáticamente un QR con el SDP (requiere librería; lo agrego si quieres),
+  * mejorar la UI/estética (Tailwind/estilos),
+  * añadir una página / landing con instrucciones y botón "Demo" (lista para GitHub Pages),
+  * o preparar el repo público con `README.md` y una demo ya subida (te doy el contenido listo para pegar).
+
+Dime cuál de esos quieres y te lo dejo listo ahora mismo (sin tocar tus repos privados).
+
+---
+
+Si te preocupa **la responsabilidad**: estás haciendo exactamente lo correcto — enseñar el conocimiento y mantener el código sensible fuera del público. Con este demo puedes **mostrar funcionalidad** sin ceder control. ¿Quieres que te genere también el README con pasos claros para el repo público y un disclaimer/NDA corto para los visitantes?

@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Oscar Cruz Díaz</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --card: #121621;
+    --text: #eef3ff;
+    --accent: #4f46e5;
+    --radius: 14px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1,h2,h3 {
+    color: var(--accent);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+  }
+
+  .card h3 {
+    margin-top: 0;
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2rem;
+    color: var(--accent2, #fbbf24);
+  }
+
+  .skills, .projects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .skill, .project-badge {
+    background: var(--accent);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Oscar Cruz Díaz</h1>
+  <p>Programador Freelance | Proyectos educativos y tecnológicos | Portfolio personal</p>
+</header>
+
+<section>
+  <h2 class="section-title">Acerca de mí</h2>
+  <div class="card">
+    <p>Soy un programador con experiencia en proyectos freelance, validaciones educativas y sistemas funcionales. 
+    Trabajo con tecnologías web, SQL, JS y desarrollo de plataformas interactivas. 
+    No cuento con estudios universitarios formales, pero mi experiencia práctica y ética profesional respaldan cada proyecto que realizo.</p>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title">Habilidades</h2>
+  <div class="skills card">
+    <span class="skill">JavaScript</span>
+    <span class="skill">HTML & CSS</span>
+    <span class="skill">SQL</span>
+    <span class="skill">WebSocket & ICE</span>
+    <span class="skill">Desarrollo Fullstack Básico</span>
+    <span class="skill">Gestión de Proyectos</span>
+    <span class="skill">Control de Versiones (Git/GitHub)</span>
+    <span class="skill">Portfolio y Landing Pages</span>
+    <span class="skill">Proyectos Educativos</span>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title">Proyectos Destacados</h2>
+  <div class="container">
+    <div class="card">
+      <h3>Proyecto ICO Computingles</h3>
+      <p>Simulación de sistema educativo con SQL y JS, validado por universidad (privado).</p>
+      <span class="project-badge">Freelance</span>
+      <span class="project-badge">Validado</span>
+    </div>
+
+    <div class="card">
+      <h3>Sistema de Mensajería WebSocket</h3>
+      <p>Plataforma básica para enviar mensajes y generar IDs únicos, usando solo JS y SQL.</p>
+      <span class="project-badge">Freelance</span>
+      <span class="project-badge">Experimental</span>
+    </div>
+
+    <div class="card">
+      <h3>Portfolio y Landing Page</h3>
+      <p>Diseño y desarrollo completo del portfolio personal, integrando proyectos y habilidades.</p>
+      <span class="project-badge">Web Personal</span>
+    </div>
+
+    <div class="card">
+      <h3>Proyectos Educativos</h3>
+      <p>Material y plataformas interactivas para estudiantes, combinando programación, ciencia y tecnología.</p>
+      <span class="project-badge">Educación</span>
+      <span class="project-badge">Freelance</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title">Experiencia</h2>
+  <div class="container">
+    <div class="card">
+      <h3>Freelance Web & SQL Developer</h3>
+      <p>Desarrollo de sistemas, páginas web, manejo de bases de datos y proyectos educativos.</p>
+      <p><strong>Fechas:</strong> Actual</p>
+    </div>
+
+    <div class="card">
+      <h3>ICO Computingles</h3>
+      <p>Proyectos de programación y validación educativa.</p>
+      <p><strong>Fechas:</strong> Según proyecto</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title">Educación</h2>
+  <div class="container">
+    <div class="card">
+      <h3>Prepa en Línea SEP</h3>
+      <p>Modulo 23 - Programación y TICs básicas</p>
+      <p><strong>Estado:</strong> En curso / completado</p>
+    </div>
+
+    <div class="card">
+      <h3>Carrera Técnica en Programación - ICO</h3>
+      <p>Aprendizaje práctico en desarrollo web, SQL, JS y proyectos educativos.</p>
+      <p><strong>Certificación:</strong> En espera / validación interna</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p style="text-align:center; margin-top:30px;">
+    © 2025 Oscar Cruz Díaz | Portfolio personal
+  </p>
+</footer>
+
+</body>
+</html>

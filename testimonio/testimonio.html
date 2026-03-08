@@ -1,0 +1,110 @@
+
+
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Oscar CD Testimonio</title>
+<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="/styles/style.css">
+
+<style>
+  div iframe { width: 90%; }
+  .justify-text { text-align: justify; line-height: 1.6; color: #eef3ff; font-family: Inter, sans-serif; }
+</style>
+</head>
+<body>
+
+  <script>
+  // Previene acceso directo a testimonio.html
+  const prev = document.referrer;
+  if(!prev.includes("login.html")){
+    // si no viene del login, regresa al login
+    window.location.href = "login.html";
+  }
+</script>
+
+
+  
+<header>
+  <nav>
+    <strong>Oscar / Testimonio</strong>
+  </nav>
+</header>
+
+<div class="layout">
+
+  <aside>
+    <h3>Menú</h3>
+    <p>Links, apps, favoritos, temas de interés…</p>
+    <ul>
+      <li><a href="https://oscarcruzdiaz.vercel.app">inicio-home</a></li>
+      <li><a href="portafolio/index.html">Portafolio</a></li>
+      <li><a href="https://oscarcruzdiaz.vercel.app/testimonio">Testimonio</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <div class="perfil">
+      <div class="portada">
+        <div class="foto-perfil"></div>
+      </div>
+      <div class="info">
+        <h2>Oscar - C. D.</h2>
+        <p>Desarrollador creativo de sistemas web, imagine, lives.</p>
+        <div class="datos">
+          <div class="dato"><strong>Profesión:</strong> Full-stack web creator</div>
+          <div class="dato"><strong>Capacidad:</strong> Creatividad, ciencia, matemáticas</div>
+          <div class="dato"><strong>Filosofías y experiencias:</strong> Cada error da mucha más ventaja de aprendizaje que una racha perfecta</div>
+          <div class="dato"><strong>Intereses:</strong> O.S. creativos, multimedia, mini-juegos</div>
+          <div class="dato"><strong>Ubicación:</strong> Tlaxcala, México</div>
+          <div class="dato"><strong>Estado:</strong> Motivación y resiliente</div>
+          <div class="dato"><strong>Estudios:</strong> Álgebra, Física cuántica, Programación, códigos, lógica. Las matemáticas son la poesía de la lógica.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="justify-text">
+      Oscar Cruz Díaz es una persona increíblemente dedicada, creativa y resiliente. Cada proyecto, cada línea de código, cada experimento o documentación que crea refleja su pasión por la ciencia, la tecnología, la educación y la creatividad. Su capacidad de aprender y desarrollarse de manera autodidacta demuestra una fuerza interna y un compromiso que pocas personas poseen.
+
+      A pesar de las dificultades y la falta de apoyo externo, Oscar mantiene su coherencia, claridad y respeto en cada acción. Su esfuerzo constante, su ingenio y su forma de organizar el caos en productividad lo convierten en alguien único y valioso. Cada logro suyo, desde un pequeño proyecto hasta complejos sistemas educativos y tecnológicos, es prueba de su talento y de la fuerza de su carácter.
+
+      Oscar merece reconocerse a sí mismo y sentirse orgulloso de lo que ha construido. Sus habilidades, su creatividad y su disciplina lo hacen brillar incluso en entornos que no lo comprenden. Es un ejemplo de resiliencia, autonomía y pasión por aprender y crear, y cada día demuestra que su valor es real, tangible y admirable.
+    </div>
+
+    <div style="margin-top:16px;">
+      <a href="documentacion.html" id="doc-link" style="padding:10px 14px; background:#4f46e5; color:white; border-radius:8px; text-decoration:none;">
+        Acceder a documentación
+      </a>
+    </div>
+
+  </main>
+
+  <aside style="display:flex; flex-direction:column; gap:12px;">
+    <h3>Info - loc</h3>
+    <p>Redes, contacto, logros, etc.</p>
+  </aside>
+
+</div>
+
+<script>
+  // Bloqueo de acceso a documentación con contraseña
+  document.getElementById('doc-link').addEventListener('click', function(e){
+      const password = prompt("Ingresa la contraseña para acceder a documentación:");
+      if(password !== "TU_CONTRASEÑA") {
+          e.preventDefault();
+          alert("Contraseña incorrecta. Acceso denegado.");
+      }
+  });
+</script>
+
+<script src="app.js"></script>
+<script src="./js/script.js"></script>
+<script src="./scripts/menu.js"></script>
+
+
+</body>
+</html>
+

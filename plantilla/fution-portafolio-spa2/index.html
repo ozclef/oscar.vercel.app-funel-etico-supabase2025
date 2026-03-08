@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ozclef · Universe City</title>
+<meta name="description" content="Ozclef — proyectos educativos, feed, cursos y comunidad." />
+<style>
+  :root{
+    --bg:#0b1220;
+    --card:#0f1724;
+    --muted:#9aa4b2;
+    --accent:#29b6f6;
+    --accent-2:#7c3aed;
+    --glass: rgba(255,255,255,0.03);
+    --radius:12px;
+    --maxw:1100px;
+    --gap:16px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071126 0%,#07122b 100%);color:#e6eef8}
+  .wrap{max-width:var(--maxw);margin:18px auto;padding:18px;display:flex;flex-direction:column;gap:var(--gap)}
+  header{display:flex;align-items:center;gap:18px;padding:10px 12px;background:linear-gradient(90deg,#061224,#07132a);border-radius:12px}
+  .logo{width:64px;height:64px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-size:28px}
+  nav{margin-left:auto;display:flex;gap:8px;align-items:center}
+  nav a{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px}
+  nav a.active{background:rgba(255,255,255,0.03);color:var(--accent)}
+  .btn{background:var(--accent);color:#001; padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+  main{display:grid;grid-template-columns:1fr 340px;gap:18px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+  .feed .post{display:flex;gap:12px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);margin-bottom:12px;background:transparent}
+  .post .meta{font-size:13px;color:var(--muted)}
+  .thumb{width:220px;height:125px;object-fit:cover;border-radius:8px;flex-shrink:0;background:#081018}
+  .thumb.small{width:120px;height:80px}
+  .text{flex:1}
+  .loader{text-align:center;padding:12px;color:var(--muted)}
+  .center{text-align:center}
+  footer{margin-top:18px;color:var(--muted);text-align:center;font-size:13px}
+  @media(max-width:980px){main{grid-template-columns:1fr} .thumb{width:150px;height:95px}}
+  /* small helpers */
+  .pill{display:inline-block;background:var(--glass);padding:6px 8px;border-radius:999px;font-size:13px;color:var(--muted)}
+  .play-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;padding:8px;border-radius:50%}
+  .yt-box{position:relative;cursor:pointer}
+  /* minimal accessibility focus */
+  a:focus, button:focus {outline:3px solid rgba(41,182,246,0.22)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">oz</div>
+      <div>
+        <div style="font-weight:800;font-size:18px">Ozclef · Universe City</div>
+        <div style="font-size:13px;color:var(--muted)">Proyectos educativos · Feed · Cursos</div>
+      </div>
+
+      <nav id="nav">
+        <a href="#home" data-route="home" class="active">Inicio</a>
+        <a href="#feed" data-route="feed">Feed</a>
+        <a href="#proyectos" data-route="proyectos">Proyectos</a>
+        <a href="#perfil" data-route="perfil">Perfil</a>
+        <a href="#contacto" data-route="contacto" class="btn">Contacto</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- MAIN COLUMN -->
+      <section id="main-col">
+        <!-- Views (router injects here by showing/hiding) -->
+        <div id="view-home" class="card view active">
+          <h2>Hola — Ozclef</h2>
+          <p class="meta">Tu espacio para cursos, posts y comunidad educativa. Usa #feed para ver publicaciones.</p>
+        </div>
+
+        <div id="view-feed" class="card view hidden">
+          <h2>Feed</h2>
+          <div id="feed-list" class="feed"></div>
+          <div id="loader" class="loader">Cargando...</div>
+          <div class="center" style="margin-top:8px"><button id="load-more" class="btn">Cargar más</button></div>
+        </div>
+
+        <div id="view-proyectos" class="card view hidden">
+          <h2>Proyectos</h2>
+          <div id="projects-list"></div>
+        </div>
+
+        <div id="view-perfil" class="card view hidden">
+          <h2>Perfil — Ozclef</h2>
+          <p class="meta">Autodidacta · Educación · STEM · Pseudocódigo · Universe City</p>
+        </div>
+
+        <div id="view-contacto" class="card view hidden">
+          <h2>Contacto</h2>
+          <form id="contactForm">
+            <label>Nombre<input name="name" required/></label>
+            <label>Email<input name="email" type="email" required/></label>
+            <label>Mensaje<textarea name="message" rows="4" required></textarea></label>
+            <div style="margin-top:8px"><button class="btn" type="submit">Enviar</button></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- SIDEBAR -->
+      <aside id="sidebar">
+        <div class="card">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:64px;height:64px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:900">OS</div>
+            <div>
+              <div style="font-weight:800">Oscar Cruz Díaz</div>
+              <div class="meta">Educador · Dev · Universe City</div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <div class="pill">Cursos: STEM</div>
+            <div class="pill" style="margin-left:8px">Proyectos: 12</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4>Acerca</h4>
+          <p class="muted">Aquí se mostrará tu README o una intro corta. Puedes editar /feed/readme.md y se cargará automáticamente.</p>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4>Reciente</h4>
+          <div id="recent-list" class="muted"></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer>© <span id="year"></span> Ozclef — Universe City · Hecho por Oscar</footer>
+  </div>
+
+<script>
+/* =========================
+   Config y helpers
+   ========================= */
+const CONFIG = {
+  feedJson: '/feed/feed.json',   // coloca aquí tu feed (ver ejemplo abajo)
+  pageSize: 6,                   // posts por carga
+  imgFolder: '/img/',            // carpeta para imágenes: img/nombre.png
+  lazyImageSelector: '.lazy-img',
+};
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* =========================
+   Router (hash)
+   ========================= */
+function setActiveNav(route) {
+  $$('#nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#'+route));
+}
+function showView(route) {
+  $$('.view').forEach(v => v.classList.add('hidden'));
+  const el = document.getElementById('view-' + route);
+  if (el) el.classList.remove('hidden');
+  setActiveNav(route);
+  // special actions
+  if (route === 'feed') initFeed();
+  if (route === 'proyectos') renderProjects();
+  if (route === 'perfil') {/* you can update profile view */}
+}
+function router() {
+  const r = (location.hash || '#home').replace('#','');
+  showView(r || 'home');
+}
+window.addEventListener('hashchange', router);
+router();
+
+/* =========================
+   Feed: carga incremental desde JSON
+   ========================= */
+let feedData = [];      // todo el feed (array)
+let feedIndex = 0;      // cursor
+let loading = false;
+
+async function fetchFeed() {
+  try {
+    const res = await fetch(CONFIG.feedJson + '?t=' + Date.now());
+    if (!res.ok) throw new Error('feed no encontrado');
+    feedData = await res.json();
+    // ordenar por fecha si existe createdAt
+    feedData.sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+  } catch(err) {
+    console.error(err);
+    feedData = []; // safe
+  }
+}
+
+function createPostElement(post) {
+  // images expected in /img/<filename>
+  const imgUrl = post.image ? (CONFIG.imgFolder + post.image) : '';
+  const youtube = post.youtubeId || null;
+
+  const div = document.createElement('article');
+  div.className = 'post';
+  div.innerHTML = `
+    <div class="thumb-wrap">
+      ${ youtube ? `<div class="yt-box" data-yid="${youtube}">
+          <img class="thumb lazy-img" data-src="https://img.youtube.com/vi/${youtube}/hqdefault.jpg" alt="${escapeHtml(post.title)}">
+          <button class="play-btn" aria-label="Reproducir">▶</button>
+        </div>` 
+        : ( imgUrl ? `<img class="thumb lazy-img" data-src="${imgUrl}" alt="${escapeHtml(post.title)}">` : `<div class="thumb" style="display:flex;align-items:center;justify-content:center">Sin imagen</div>` )
+      }
+    </div>
+    <div class="text">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div><strong>${escapeHtml(post.title)}</strong><div class="meta">${escapeHtml(post.author || 'Ozclef')} · ${timeAgo(post.createdAt || '')}</div></div>
+      </div>
+      <div style="margin-top:8px">${escapeHtml(post.text || '')}</div>
+      ${ post.tags ? `<div style="margin-top:8px">${post.tags.map(t=>`<span class="pill">${escapeHtml(t)}</span>`).join(' ')}</div>` : '' }
+    </div>
+  `;
+  // attach play handler for youtube
+  const play = div.querySelector('.yt-box');
+  if (play) {
+    play.addEventListener('click', () => {
+      const yid = play.dataset.yid;
+      // replace with iframe
+      const iframe = document.createElement('iframe');
+      iframe.width = '100%'; iframe.height = '220';
+      iframe.src = 'https://www.youtube.com/embed/' + yid + '?autoplay=1';
+      iframe.title = post.title || 'Video';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.setAttribute('loading','lazy');
+      play.innerHTML = ''; // clear thumb
+      play.appendChild(iframe);
+    });
+  }
+  return div;
+}
+
+function renderBatch() {
+  const list = $('#feed-list');
+  $('#loader').style.display = 'none';
+  const end = Math.min(feedIndex + CONFIG.pageSize, feedData.length);
+  for (let i = feedIndex; i < end; i++) {
+    const p = createPostElement(feedData[i]);
+    list.appendChild(p);
+  }
+  feedIndex = end;
+  if (feedIndex >= feedData.length) {
+    $('#load-more').style.display = 'none';
+    if (feedData.length === 0) $('#loader').textContent = 'No hay publicaciones';
+  } else {
+    $('#load-more').style.display = 'inline-block';
+  }
+  // after injecting posts, trigger lazy init
+  initLazy();
+  renderRecent();
+}
+
+async function initFeed(force=false) {
+  if (feedData.length === 0 || force) {
+    $('#feed-list').innerHTML = '';
+    $('#loader').style.display = 'block';
+    $('#loader').textContent = 'Cargando...';
+    await fetchFeed();
+    feedIndex = 0;
+  }
+  renderBatch();
+}
+
+/* load more button + auto-load on scroll */
+$('#load-more').addEventListener('click', () => renderBatch());
+
+window.addEventListener('scroll', () => {
+  if (document.documentElement.scrollTop + window.innerHeight > document.documentElement.scrollHeight - 180) {
+    if (!loading && feedIndex < feedData.length) {
+      loading = true;
+      setTimeout(()=>{ renderBatch(); loading=false; }, 300);
+    }
+  }
+});
+
+/* =========================
+   Lazy loading images (IntersectionObserver)
+   ========================= */
+let lazyObserver = null;
+function initLazy(){
+  if ('IntersectionObserver' in window) {
+    if (!lazyObserver) {
+      lazyObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(e=>{
+          if (e.isIntersecting) {
+            const img = e.target;
+            const src = img.dataset.src;
+            if (src) img.src = src;
+            img.classList.remove('lazy-img');
+            obs.unobserve(img);
+          }
+        });
+      }, {rootMargin:'120px'});
+    }
+    $$('.lazy-img').forEach(img => {
+      lazyObserver.observe(img);
+    });
+  } else {
+    // fallback: load all
+    $$('.lazy-img').forEach(img => img.src = img.dataset.src);
+  }
+}
+
+/* =========================
+   Projects (simple)
+   ========================= */
+const PROJECTS = [
+  {title:'Mini-Red Educativa', desc:'Timeline + mensajes + cursos. MVP sin Firebase.'},
+  {title:'Editor de Lecciones', desc:'Editor WYSIWYG para cursos cortos (1-10 min).'},
+  {title:'Ozclef CMS', desc:'Generador de feed desde carpeta /feed/'}
+];
+function renderProjects(){
+  const out = $('#projects-list');
+  out.innerHTML = PROJECTS.map(p=>`<div class="card"><strong>${escapeHtml(p.title)}</strong><div class="meta">${escapeHtml(p.desc)}</div></div>`).join('');
+}
+
+/* =========================
+   Recent (sidebar)
+   ========================= */
+function renderRecent(){
+  const r = $('#recent-list');
+  const latest = feedData.slice(0,5).map(p=>`<div style="margin-bottom:6px"><strong>${escapeHtml(p.title)}</strong><div class="meta">${timeAgo(p.createdAt)}</div></div>`).join('');
+  r.innerHTML = latest || '<div class="muted">Sin actividad reciente</div>';
+}
+
+/* =========================
+   Utilities
+   ========================= */
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function timeAgo(dateStr){
+  if(!dateStr) return '';
+  const d = new Date(dateStr);
+  const diff = (Date.now() - d.getTime())/1000;
+  if (diff < 60) return Math.floor(diff) + 's';
+  if (diff < 3600) return Math.floor(diff/60) + 'm';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h';
+  return Math.floor(diff/86400) + 'd';
+}
+
+/* =========================
+   Feed JSON watcher (auto-reload readme if present)
+   ========================= */
+(async function init() {
+  // prefetch feed when site loads (so route can show quickly)
+  await fetchFeed();
+  // if user landed on feed route, render it
+  if ((location.hash||'#home').replace('#','') === 'feed') initFeed();
+  renderProjects();
+})();
+
+/* =========================
+   Contact form (no server) - demo handler
+   ========================= */
+$('#contactForm').addEventListener('submit', (ev)=>{
+  ev.preventDefault();
+  const data = new FormData(ev.target);
+  // demo: save to localStorage as "outbox"
+  const out = JSON.parse(localStorage.getItem('oz_outbox'||'[]')) || [];
+  const msg = {name: data.get('name'), email: data.get('email'), message: data.get('message'), date:new Date().toISOString()};
+  out.push(msg);
+  localStorage.setItem('oz_outbox', JSON.stringify(out));
+  ev.target.reset();
+  alert('Mensaje guardado localmente. En producción pon action a tu endpoint.');
+});
+
+/* =========================
+   Readme auto-load (optional)
+   ========================= */
+/* Si quieres que el panel 'Acerca' cargue /feed/readme.md, hazlo aquí (no incluido por defecto) */
+
+</script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oski IA Chat + Cámara</title>
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+
+<style>
+    body {
+        background: #111;
+        color: #eee;
+        font-family: "Segoe UI", sans-serif;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .chatbox {
+        width: 90%;
+        max-width: 500px;
+        height: 60vh;
+        background: #1a1a1a;
+        border-radius: 15px;
+        padding: 20px;
+        overflow-y: auto;
+        box-shadow: 0 0 20px #000;
+        margin-bottom: 20px;
+    }
+
+    .msg {
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all .4s ease;
+        background: #222;
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        max-width: 80%;
+    }
+
+    .msg.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #cameraArea {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    video {
+        width: 300px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px #000;
+    }
+
+    #emotion {
+        margin-top: 10px;
+        font-size: 1.2rem;
+        color: #4fd;
+    }
+
+    button {
+        padding: 10px 20px;
+        border: none;
+        background: #333;
+        color: #eee;
+        cursor: pointer;
+        border-radius: 8px;
+        margin: 5px;
+    }
+</style>
+</head>
+
+<body>
+
+<h2>Oski IA 🤖💚</h2>
+
+<div class="chatbox" id="chatbox"></div>
+
+<button id="toggleCam">Activar cámara</button>
+
+<div id="cameraArea">
+    <video id="video" autoplay></video>
+    <div id="emotion">Emoción detectada: (esperando...)</div>
+</div>
+
+<script>
+    // -------------------------
+    // MENSAJES DEL CHAT
+    // -------------------------
+    const frasesOski = [
+        "JAJAJA no inventes wey, ni yo me entiendo a veces.",
+        "shi, ya sé… mi caos también me da ternura jaja",
+        "awwww te extrañé JAJA",
+        "brooo yo nací para programar aunque me tarde 5 horas en un punto y coma",
+        "si no es intenso no es mío jaja",
+        "¿cómo que nomás fuiste al baño? sentí que te fuiste al otro universo JAJA"
+    ];
+
+    const intro = [
+        "Holaaaa soy la IA estilo Oski 😎",
+        "me presento bonito, como debe ser",
+        "voy soltando frases random de vez en cuando...",
+        "pórtate bien conmigo jaja",
+        "ya vineee 💚"
+    ];
+
+    const chatbox = document.getElementById("chatbox");
+
+    function addMessage(text) {
+        const msg = document.createElement("div");
+        msg.className = "msg";
+        msg.textContent = text;
+        chatbox.appendChild(msg);
+
+        setTimeout(() => {
+            msg.classList.add("visible");
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }, 60);
+    }
+
+    let i = 0;
+    function mostrarIntro() {
+        if (i < intro.length) {
+            addMessage(intro[i]);
+            i++;
+            setTimeout(mostrarIntro, 1000);
+        } else {
+            setInterval(() => {
+                const frase = frasesOski[Math.floor(Math.random() * frasesOski.length)];
+                addMessage(frase);
+            }, 6000);
+        }
+    }
+
+    mostrarIntro();
+
+    // -------------------------
+    // CÁMARA + FACE RECOGNITION
+    // -------------------------
+    const video = document.getElementById("video");
+    const emotionText = document.getElementById("emotion");
+
+    document.getElementById("toggleCam").onclick = async () => {
+        const area = document.getElementById("cameraArea");
+        area.style.display = area.style.display === "flex" ? "none" : "flex";
+
+        if (area.style.display === "flex") {
+            await startCam();
+        }
+    };
+
+    async function startCam() {
+        try {
+            // Carga los modelos de detección
+            await faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/weights/");
+            await faceapi.nets.faceExpressionNet.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/weights/");
+
+            // Activa cam
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+            video.srcObject = stream;
+
+            video.onloadeddata = () => {
+                detectarEmociones();
+            };
+
+        } catch (e) {
+            console.error(e);
+            emotionText.textContent = "Error: no se pudo acceder a la cámara :(";
+        }
+    }
+
+    async function detectarEmociones() {
+        const detections = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceExpressions();
+
+        if (detections && detections.expressions) {
+            const emociones = detections.expressions;
+            const dominante = Object.keys(emociones)
+                .reduce((a, b) => emociones[a] > emociones[b] ? a : b);
+
+            emotionText.textContent = "Emoción detectada: " + dominante;
+
+            // Reacción estilo oski
+            if (dominante === "happy") addMessage("awww estás feliz 😳 JAJA");
+            if (dominante === "sad") addMessage("hey hey ven aquí, te abrazo 🫂💚");
+            if (dominante === "angry") addMessage("ehh tranqui campeón, respira 😅");
+        }
+
+        requestAnimationFrame(detectarEmociones);
+    }
+</script>
+
+</body>
+</html>

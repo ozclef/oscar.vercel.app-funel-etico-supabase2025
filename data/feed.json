@@ -1,0 +1,20 @@
+[
+  {
+    "title": "Mi método STEM para niños",
+    "text": "Explicar física, química y superhéroes con ética, motivación y creatividad.",
+    "img": "img/stem1.png",
+    "url": "#/post/stem1"
+  },
+  {
+    "title": "Pseudocódigo médico — enseñar lógica",
+    "text": "func analizar_paciente(p){ obtener_sintomas(); comparar_base(); retornar_recomendaciones(); }",
+    "img": "img/pseudo.png",
+    "url": "#/post/pseudo"
+  },
+  {
+    "title": "Computación cuántica para peques",
+    "text": "Explicar qubits usando caricaturas, colores y creatividad.",
+    "img": "img/quantum.png",
+    "url": "#/post/quantum"
+  }
+]

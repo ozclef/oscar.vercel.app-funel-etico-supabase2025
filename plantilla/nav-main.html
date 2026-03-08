@@ -1,0 +1,41 @@
+
+<html>
+  <style>
+    /*
+    Y por CSS, puedes hacer algo básico:
+css
+Copiar código*/
+.submenu {
+  display: none;
+  background: #222;
+  color: #fff;
+  padding: 1em;
+  border-radius: 10px;
+  </style>
+
+7:24 p.m.
+<nav>
+  <button onclick="mostrarMenu('menuPortafolio')">Portafolio</button>
+  <button onclick="mostrarMenu('menuProyectos')">Proyectos</button>
+  <button onclick="mostrarMenu('menuContacto')">Contacto</button>
+</nav>
+<div id="menuPortafolio" class="submenu">📁 Submenú Portafolio</div>
+<div id="menuProyectos" class="submenu">⚙️ Submenú Proyectos</div>
+<div id="menuContacto" class="submenu">💬 Submenú Contacto</div>
+<!-------
+  Y el JavaScript:
+js
+Copiar código-------->
+function mostrarMenu(id) {
+  // Oculta todos los menús
+  document.querySelectorAll('.submenu').forEach(menu => {
+    menu.style.display = 'none';
+  });
+  // Muestra solo el que corresponde
+  const target = document.getElementById(id);
+  if (target) target.style.display = 'block';
+}
+
+  margin: 0.5em 0;
+}
+</html>

@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Registro de Caso — Asesoría en Privacidad & Ciberseguridad</title>
+  <style>
+    /* --- Variables (puedes convertir a SCSS fácilmente) ---
+       $bg: #0f172a; $card:#0b1220; $accent:#3b82f6; $muted:#94a3b8; $glass: rgba(255,255,255,0.04)
+       Compila estas variables si quieres llevarlo a SCSS. */
+
+    :root{
+      --bg:#0f172a; --card:#071028; --accent:#3b82f6; --muted:#94a3b8; --glass:rgba(255,255,255,0.03);
+      --radius:12px; --gap:14px; --mono: "ui-monospace", SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:linear-gradient(180deg,var(--bg),#071029); color:#e6eef8; padding:28px;}
+
+    .wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:24px}
+    header{grid-column:1/-1;display:flex;gap:12px;align-items:center;margin-bottom:6px}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .card{background:linear-gradient(180deg,var(--card), #04121f);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.6);}
+
+    form .row{display:flex;gap:12px;margin-bottom:10px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type=text], input[type=date], textarea, select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:14px}
+    textarea{min-height:120px;resize:vertical}
+
+    .small{font-size:12px;color:var(--muted)}
+
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    button{background:var(--accent);color:#06203a;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+    /* derecha */
+    .meta{display:flex;flex-direction:column;gap:12px}
+    .info{font-family:var(--mono);background:var(--glass);padding:12px;border-radius:10px;color:var(--muted);font-size:13px}
+
+    .preview{white-space:pre-wrap;background:#021426;padding:12px;border-radius:10px;min-height:180px;overflow:auto}
+    .filelist{font-size:13px;color:var(--muted);}
+
+    footer{grid-column:1/-1;margin-top:16px;color:var(--muted);font-size:13px}
+
+    @media (max-width:980px){.wrap{grid-template-columns:1fr} .meta{order:2}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div style="flex:1">
+        <h1>Registro de Caso — Asesoría en Privacidad</h1>
+        <p class="lead">Formulario para documentar incidentes (apps fraudulentas, suplantación, exhibición) — privado, exportable y local.</p>
+      </div>
+      <div style="text-align:right">
+        <div class="small">Plantilla: <strong>Asesoría • v1</strong></div>
+        <div class="small">Genera ID único y permite exportar/descargar JSON</div>
+      </div>
+    </header>
+
+    <!-- PANEL PRINCIPAL (FORM) -->
+    <section class="card">
+      <form id="caseForm">
+        <div class="row">
+          <div style="flex:1">
+            <label>ID del caso</label>
+            <input id="caseId" type="text" readonly />
+            <div class="small">ID generado automáticamente. Úsalo para referencia con fiscalía/abogado.</div>
+          </div>
+          <div style="width:160px">
+            <label>Fecha</label>
+            <input id="caseDate" type="date" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="flex:1">
+            <label>Nombre / Alias (opcional)</label>
+            <input id="caseName" type="text" placeholder="Ej. 'Sra. M.' o alias" />
+          </div>
+          <div style="width:160px">
+            <label>Tipo de incidente</label>
+            <select id="caseType">
+              <option value="exposicion">Exposición / Ley Olimpia</option>
+              <option value="financiero">Fraude / App financiera</option>
+              <option value="suplantacion">Suplantación / Datos</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label>Resumen del caso (no subir imágenes íntimas)</label>
+          <textarea id="caseDesc" placeholder="Describe lo ocurrido: qué apps, cómo, fechas, actores, cómo te enteraste, efectos..." ></textarea>
+        </div>
+
+        <div class="row" style="margin-top:8px">
+          <div style="flex:1">
+            <label>Apps / URLs involucradas (separa por coma)</label>
+            <input id="caseApps" type="text" placeholder="Ej. appfraude.apk, playstore.com/xxx" />
+          </div>
+          <div style="width:200px">
+            <label>Dispositivo / Modelo</label>
+            <input id="caseDevice" type="text" placeholder="Ej. Moto G7 - Android 10" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Capturas / Evidencia (solo imágenes NO íntimas)</label>
+          <input id="caseFiles" type="file" accept="image/*,.pdf" multiple />
+          <div class="small">Mantén privado: no pidas ni subas fotos íntimas ni nombres completos.</div>
+          <div id="fileList" class="filelist"></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label>Acciones solicitadas / Notas (qué quiere la persona: denuncia, bloquear, asesoría)</label>
+          <textarea id="caseActions" placeholder="Qué desea la víctima y pasos deseados"></textarea>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+          <input id="consent" type="checkbox" />
+          <label class="small">Confirmo que la información subida no incluye imágenes íntimas ni datos sensibles sin consentimiento. Entiendo que esto es para documentación y asesoría.</label>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="saveBtn">Guardar localmente</button>
+          <button type="button" id="exportBtn" class="ghost">Exportar JSON</button>
+          <button type="button" id="downloadMd" class="ghost">Exportar Markdown</button>
+          <button type="button" id="printBtn" class="ghost">Imprimir / PDF</button>
+        </div>
+      </form>
+
+      <div style="margin-top:14px">
+        <label class="small">Resumen visible (solo para revisión)</label>
+        <div id="mdPreview" class="preview"></div>
+      </div>
+    </section>
+
+    <!-- PANEL DERECHO (META) -->
+    <aside class="meta">
+      <div class="card info">
+        <div><strong>ID actual:</strong></div>
+        <div id="idBox" style="font-family:var(--mono);font-size:13px;margin-top:6px;color:#cfe7ff">-</div>
+      </div>
+
+      <div class="card info">
+        <div><strong>Instrucciones rápidas</strong></div>
+        <ol style="padding-left:18px;margin-top:8px;color:var(--muted);font-size:13px">
+          <li>Genera ID automáticamente.</li>
+          <li>Recolecta capturas (NO íntimas) y enlaces.</li>
+          <li>Guarda local o exporta JSON/MD para abogado o fiscalía.</li>
+        </ol>
+      </div>
+
+      <div class="card info">
+        <div><strong>Historial local</strong></div>
+        <div id="storeList" class="small" style="margin-top:8px;color:var(--muted)"></div>
+      </div>
+    </aside>
+
+    <footer>
+      Nota: Este sistema guarda datos <strong>localmente</strong> (localStorage). No sube nada a la nube. Si requieres encriptación real y custodia legal, integra un flujo con abogado y servicios cifrados profesionales.
+    </footer>
+  </div>
+
+  <script>
+    // -------------------------------------------------
+    // Plantilla JS: genera ID, maneja archivos, guarda/exporta
+    // Comentarios en español y optimizados para bajo consumo
+    // -------------------------------------------------
+
+    const qs = sel => document.querySelector(sel);
+    const caseId = qs('#caseId');
+    const caseDate = qs('#caseDate');
+    const caseName = qs('#caseName');
+    const caseType = qs('#caseType');
+    const caseDesc = qs('#caseDesc');
+    const caseApps = qs('#caseApps');
+    const caseDevice = qs('#caseDevice');
+    const caseFiles = qs('#caseFiles');
+    const caseActions = qs('#caseActions');
+    const consent = qs('#consent');
+    const fileList = qs('#fileList');
+    const idBox = qs('#idBox');
+    const mdPreview = qs('#mdPreview');
+    const storeList = qs('#storeList');
+
+    // ID único: usa crypto.randomUUID si está disponible (rápido y seguro)
+    function genID(){
+      if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      // fallback corto y legible
+      return 'caso-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+    }
+
+    // Inicializa
+    function init(){
+      const today = new Date().toISOString().slice(0,10);
+      caseDate.value = today;
+      const id = genID();
+      caseId.value = id;
+      idBox.textContent = id;
+      refreshStoreList();
+      renderPreview();
+    }
+
+    // Manejo de archivos: no subimos nada, solo guardamos metadatos y previews locales
+    caseFiles.addEventListener('change', e => {
+      const files = Array.from(e.target.files);
+      fileList.innerHTML = '';
+      files.forEach((f, i) => {
+        const row = document.createElement('div');
+        row.textContent = `${i+1}. ${f.name} — ${Math.round(f.size/1024)} KB`;
+        fileList.appendChild(row);
+      });
+    });
+
+    // Construir objeto de caso (sin incluir b64 de imágenes para evitar memoria excesiva)
+    function buildCaseObject(){
+      return {
+        id: caseId.value,
+        date: caseDate.value,
+        name: caseName.value || null,
+        type: caseType.value,
+        device: caseDevice.value || null,
+        apps: caseApps.value ? caseApps.value.split(',').map(s=>s.trim()).filter(Boolean) : [],
+        description: caseDesc.value,
+        actionsRequested: caseActions.value,
+        files: Array.from(caseFiles.files).map(f=>({name:f.name,size:f.size,type:f.type})),
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    // Guardar localmente (localStorage) — almacena JSON por ID
+    qs('#saveBtn').addEventListener('click', ()=>{
+      if(!consent.checked){ alert('Marca la confirmación de consentimiento.'); return; }
+      const obj = buildCaseObject();
+      try{
+        localStorage.setItem('case-'+obj.id, JSON.stringify(obj));
+        refreshStoreList();
+        alert('Guardado localmente. Puedes exportar el JSON para compartir con abogado.');
+      }catch(err){
+        console.error(err); alert('Error guardando localmente (¿espacio insuficiente?).');
+      }
+    });
+
+    // Lista de items guardados (solo claves)
+    function refreshStoreList(){
+      const keys = Object.keys(localStorage).filter(k=>k.startsWith('case-')).reverse();
+      if(keys.length===0){ storeList.textContent = '— vacío —'; return; }
+      storeList.innerHTML = keys.map(k=>{
+        const v = JSON.parse(localStorage.getItem(k));
+        return `<div style="margin-bottom:6px"><strong>${v.id}</strong><div class=\"small\">${v.date} • ${v.type} • ${v.name||'—'}</div></div>`;
+      }).join('');
+    }
+
+    // Exportar JSON descargable
+    qs('#exportBtn').addEventListener('click', ()=>{
+      const obj = buildCaseObject();
+      const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `${obj.id}.json`; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 3000);
+    });
+
+    // Exportar Markdown (útil para archivos legibles o notas legales)
+    qs('#downloadMd').addEventListener('click', ()=>{
+      const o = buildCaseObject();
+      const md = toMarkdown(o);
+      const blob = new Blob([md], {type:'text/markdown'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download = `${o.id}.md`; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    });
+
+    // Render preview (estilo Markdown legible)
+    function toMarkdown(o){
+      return `# Caso ${o.id}\n\n`+
+             `**Fecha:** ${o.date}\n`+
+             `**Tipo:** ${o.type}\n`+
+             `**Nombre/Alias:** ${o.name||'-'}\n`+
+             `**Dispositivo:** ${o.device||'-'}\n`+
+             `**Apps/URLs:** ${o.apps.length? o.apps.join(', '): '-'}\n\n`+
+             `## Resumen\n${o.description || '-'}\n\n`+
+             `## Evidencias (listadas)\n`+
+             `${o.files.length? o.files.map(f=> '- '+f.name+' ('+Math.round(f.size/1024)+' KB)').join('\n') : '-'}\n\n`+
+             `## Acciones solicitadas\n${o.actionsRequested || '-'}\n\n`+
+             `---\nDocumento exportado localmente para documentación y posible entrega a abogado o fiscalía.`;
+    }
+
+    // Actualiza vista previa en vivo
+    ['change','input'].forEach(evt => {
+      ['caseName','caseType','caseDesc','caseApps','caseDevice','caseActions','caseDate'].forEach(id=>{
+        qs('#'+id).addEventListener(evt, renderPreview);
+      });
+    });
+
+    function renderPreview(){
+      const o = buildCaseObject();
+      mdPreview.textContent = toMarkdown(o);
+    }
+
+    // Imprimir / generar PDF localmente (usa print)
+    qs('#printBtn').addEventListener('click', ()=>{
+      // Abrir nueva ventana con contenido mínimo para imprimir
+      const o = buildCaseObject();
+      const win = window.open('','_blank');
+      const html = `<!doctype html><html><head><meta charset=\"utf-8\"><title>${o.id}</title><style>body{font-family:Arial,Helvetica,sans-serif;padding:20px;color:#111}pre{white-space:pre-wrap}</style></head><body><h2>Caso ${o.id}</h2><pre>${toMarkdown(o)}</pre></body></html>`;
+      win.document.write(html); win.document.close();
+      win.focus();
+      setTimeout(()=>win.print(),600);
+    });
+
+    // Inicializa
+    init();
+
+    // Optimizaciones / notas:
+    // - No convertimos imágenes a base64 para evitar consumo de RAM.
+    // - Si necesitas adjuntar imágenes en el JSON, hazlo con consentimiento y advertencia (avisa al cliente sobre privacidad).
+    // - Para encriptación real, integra Web Crypto + contraseña y guarda el blob cifrado en localStorage o en USB externo.
+    // - Este archivo es para uso local/offline: no enviar a servicios sin consentimiento explícito.
+  </script>
+</body>
+</html>

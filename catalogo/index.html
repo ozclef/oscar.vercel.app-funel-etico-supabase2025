@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Catálogo — Oscar C.D.</title>
+<style>
+:root{
+  --bg:#09090f; --card:#0f1116;
+  --a1:#ff3bff; --a2:#37e3ff; --a3:#6dff6b;
+  --muted:#b7bcc3;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:Segoe UI,system-ui,Arial;
+  background:linear-gradient(135deg, rgba(255,59,255,0.03), rgba(55,227,255,0.03));
+  color:#eaf7f0; padding:28px;
+}
+.container{max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+h1{margin:0;font-size:18px;background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3));-webkit-background-clip:text;color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{
+  background:var(--card);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.03);
+  box-shadow:0 6px 18px rgba(0,0,0,0.6);
+}
+.thumb{height:160px;border-radius:8px;background:#0c0d10 center/cover no-repeat;margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.title{font-size:16px;margin:0 0 8px 0}
+.desc{color:var(--muted);font-size:14px;margin:0 0 12px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.price{font-weight:700}
+.btn{
+  background:linear-gradient(90deg,var(--a2),var(--a3));
+  padding:8px 12px;border-radius:8px;color:#051018;text-decoration:none;font-weight:600;
+}
+.badge{font-size:12px;padding:6px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted)}
+.footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+@media (max-width:420px){.thumb{height:120px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Catálogo — Oscar C.D.</h1>
+    <div class="badge">3 productos • listo para personalizar</div>
+  </header>
+
+  <main class="grid">
+    <article class="card">
+      <div class="thumb" style="background-image:url('https://via.placeholder.com/800x450.png?text=Perfil+Neon');">Preview</div>
+      <h2 class="title">Perfil Neon — Single Page</h2>
+      <p class="desc">Página de perfil con estilo neón, animaciones sutiles y responsive. Fácil edición: cambia texto e imágenes.</p>
+      <div class="row">
+        <div class="price">$12 USD</div>
+        <a class="btn" href="#" onclick="alert('Demo local no disponible');return false">Demo / Comprar</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="thumb" style="background-image:url('https://via.placeholder.com/800x450.png?text=Portfolio+Kit');">Preview</div>
+      <h2 class="title">Portfolio Kit — Landing</h2>
+      <p class="desc">One-page para mostrar proyectos, con modal de proyecto, filtros y sección contacto. Listo para usar.</p>
+      <div class="row">
+        <div class="price">$35 USD</div>
+        <a class="btn" href="#" onclick="alert('Demo local no disponible');return false">Demo / Comprar</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="thumb" style="background-image:url('https://via.placeholder.com/800x450.png?text=Mini-juegos');">Preview</div>
+      <h2 class="title">Mini-pack Juegos Web (3)</h2>
+      <p class="desc">Tres mini-juegos exportados en HTML: clicker, puzzle y runner. Listos para publicar o usar como base.</p>
+      <div class="row">
+        <div class="price">$65 USD</div>
+        <a class="btn" href="#" onclick="alert('Demo local no disponible');return false">Demo / Comprar</a>
+      </div>
+    </article>
+  </main>
+
+  <p class="footer">Incluye instrucciones de personalización y licencia clara. ¿Quieres que genere ZIP de uno de estos ahora?</p>
+</div>
+</body>
+</html>
